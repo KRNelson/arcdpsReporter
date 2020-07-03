@@ -1,0 +1,6 @@
+[submodule "Parsers/Elite Insights Parsers/GW2-Elite-Insights-Parser"]
+	path = Parsers/Elite Insights Parsers/GW2-Elite-Insights-Parser
+	url = https://github.com/baaron4/GW2-Elite-Insights-Parser.git
+[submodule "Parsers/Simple Parser/L0G-101086"]
+	path = Parsers/Simple Parser/L0G-101086
+	url = https://github.com/jacob-keller/L0G-101086.git
