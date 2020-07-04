@@ -1,0 +1,1 @@
+c++ .\L0G-101086\simpleArcParse\main.cpp -o SimpleParser
