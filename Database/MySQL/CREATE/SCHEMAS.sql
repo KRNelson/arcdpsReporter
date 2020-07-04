@@ -1,0 +1,4 @@
+-- Note CREATE SCHEMA is a synonym for CREATE DATABASE in mysql
+CREATE SCHEMA log;
+CREATE SCHEMA smp;
+CREATE SCHEMA rpt;
