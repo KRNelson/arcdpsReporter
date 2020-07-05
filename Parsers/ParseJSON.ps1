@@ -10,7 +10,8 @@ $SimpleParserJSON = & '.\Simple Parser\SimpleParser.exe' json $LogFile | Convert
 $EliteParserLOG = Move-Item -Path '.\Elite Insights Parsers\reports\*.log' -Destination '.\Elite Insights Parsers\reports\log' -Force -PassThru
 
 # HTML file is used by the web app for displaying individual pulls. 
-$EliteParserHTML = Move-Item -Path '.\Elite Insights Parsers\reports\*.html' -Destination '.\Elite Insights Parsers\reports\html' -Force -PassThru
+$EliteParserHTML = Copy-Item -Path '.\Elite Insights Parsers\reports\*.html' -Destination '.\Elite Insights Parsers\reports\html' -Force -PassThru
+Move-Item -Path '.\Elite Insights Parsers\reports\*.html' -Destination '.\..\Web\Apache\reports' -Force
 
 # JSON file is uploaded to the database. 
 $EliteParserJSON = Move-Item -Path '.\Elite Insights Parsers\reports\*.json' -Destination '.\Elite Insights Parsers\reports\json' -Force -PassThru | Get-Content -Raw | ConvertFrom-JSON
