@@ -12,22 +12,12 @@ CREATE TABLE IF NOT EXISTS log.TLOGCAT (
 CREATE TABLE IF NOT EXISTS log.TLOGFIL (
 	LOG_SYS_NR CHAR(36) PRIMARY KEY,
     LOG_FIL_TE NVARCHAR(256),
+    LOG_HASH_TE CHAR(64),
     
     AUD_DT DATETIME DEFAULT now(),
     FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE
 );
 
--- Used for matching identical logs in the catalog.
--- Only the Master Log will be used storing values in the database. 
-CREATE TABLE IF NOT EXISTS log.TLOGMAT_BRIDGE (
-	LOG_SYS_NR CHAR(36),
-    LOG_SYS_MAT_NR CHAR(36),
-    
-    AUD_DT DATETIME DEFAULT now(),
-    PRIMARY KEY(LOG_SYS_NR, LOG_SYS_MAT_NR),
-	FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE,
-	FOREIGN KEY(LOG_SYS_MAT_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE
-);
 ----------------------------------------------------------------
 -- smp schema used for representing the results of the Simple Parser
 -- Values are determined based on Enums in the C++ code for the parser. 
@@ -100,7 +90,7 @@ CREATE TABLE IF NOT EXISTS smp.ILOGPLY_PLAYERS (
     -- SUBGROUP
     LOG_SUB_NR INT,
     -- ADDR
-    LOG_ACC_NR INT,
+    -- LOG_ACC_NR INT,
     
     PRIMARY KEY(LOG_SYS_NR, LOG_ACC_TE),
 	FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE 
@@ -306,4 +296,46 @@ CREATE TABLE IF NOT EXISTS rpt.IRPTJSON (
 	LOG_SYS_NR CHAR(36) PRIMARY KEY,
     LOG_JSON_TE JSON,
 	FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS rpt.TRPTFIL (
+	LOG_SYS_NR CHAR(36) PRIMARY KEY,
+    LOG_LOG_TE VARCHAR(256),
+    LOG_HTML_TE VARCHAR(256)
+);
+
+-------------------------------------------------------------------
+-- gw2 schema used for containing values specific for the game
+-------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS gw2.TWEBPROF_COLORS (
+	ID VARCHAR(256),
+    COLOR_LIGHTER VARCHAR(256),
+    COLOR_LIGHT VARCHAR(256),
+    COLOR_MEDIUM VARCHAR(256),
+    COLOR_DARK VARCHAR(256),
+    COLOR_WEB VARCHAR(256),
+    COLOR_TEMPLATE VARCHAR(256)
+);
+
+INSERT INTO gw2.TWEBPROF_COLORS 
+VALUES 
+('Guardian'		,'#CFEEFD',	'#BCE8FD',	'#72C1D9',	'#186885',	'#8AF7F5'	,'{{g-color}}'),
+('Revenant'		,'#EBC9C2',	'#E4AEA3',	'#D16E5A',	'#A66356',	'[TBA]'	    ,'{{re-color}}'),
+('Warrior'		,'#FFF5BB',	'#FFF2A4',	'#FFD166',	'#CAAA2A',	'#F4983D'	,'{{w-color}}'),
+('Engineer'		,'#E8C89F',	'#E8BC84',	'#D09C59',	'#87581D',	'#f4b362'	,'{{en-color}}'),
+('Ranger'		,'#E2F6D1',	'#D2F6BC',	'#8CDC82',	'#67A833',	'#776F1B'	,'{{r-color}}'),
+('Thief'		,'#E6D5D7',	'#DEC6C9',	'#C08F95',	'#974550',	'#974550'	,'{{t-color}}'),
+('Elementalist'	,'#F6D2D1',	'#F6BEBC',	'#F68A87',	'#DC423E',	'#903B24'	,'{{e-color}}'),
+('Mesmer'		,'#D7B2EA',	'#D09EEA',	'#B679D5',	'#69278A',	'#b679d5'	,'{{m-color}}'),
+('Necromancer'	,'#D5EDE1',	'#BFE6D0',	'#52A76F',	'#2C9D5D',	'#456C40'	,'{{n-color}}'),
+('Any'			,'#EEEEEE',	'#DDDDDD',	'#BBBBBB',	'#666666',	' '         ,'{{any-color}}');
+
+------------------------------------------------------------------------------
+-- rol contains information regarding specific roles that players have taken on during an encounter
+------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS rol.TPULROL_ROLES (
+    LOG_SYS_NR CHAR(36),
+	LOG_ACC_TE NVARCHAR(256),
+	LOG_ROL_TE NVARCHAR(256)
 );
