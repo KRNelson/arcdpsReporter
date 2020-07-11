@@ -1,4 +1,5 @@
 $LogStart = $Args[1]
+$LogEnd = $Args[2]
 # Recursively iterate over each file in the target folder, and attempt to upload any .evtc files contained in it. 
 # As long as the log file comes after the start time. 
 function GetFiles($path = $pwd, [string[]]$exclude) 
@@ -13,7 +14,7 @@ function GetFiles($path = $pwd, [string[]]$exclude)
         } 
         else 
         { 
-            if( $item -like "*.evtc" -AND $item.lastwritetime -gt $LogStart) {
+            if( $item -like "*.evtc" -AND $item.lastwritetime -gt $LogStart -AND $item.lastwritetime -lt $LogEnd) {
                 TRY {
                     .\ParseJSON.ps1 $item.FullName
                 }

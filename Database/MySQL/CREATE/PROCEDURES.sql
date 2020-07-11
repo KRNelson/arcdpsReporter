@@ -91,7 +91,7 @@ END//
 
 CREATE PROCEDURE web.vue_details(intStart BIGINT, intEnd BIGINT)
 BEGIN
-	SELECT FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date' FROM smp.ilogser_servertime GROUP BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') ORDER BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
+	SELECT FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date' FROM smp.ILOGSER_SERVERTIME GROUP BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') ORDER BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
     
     SELECT Splits.LOG_SYS_NR AS Log, ServerTime.LOG_START_NR AS unixStart, ReportFiles.LOG_HTML_TE , dpsReport.LOG_JSON_TE AS Json_Log, ReportFiles.LOG_HTML_TE AS strFile
     FROM 
@@ -182,7 +182,7 @@ BEGIN
 	WHERE ServerTime.LOG_START_NR>intStart
 	  AND ServerTime.LOG_END_NR<intEnd 
 	GROUP BY ReportPlayers.LOG_SYS_NR, ServerTime.LOG_START_NR, ReportPlayers.LOG_ACC_NA, ReportPlayers.LOG_PRO_NA, Colors.COLOR_MEDIUM, Colors.COLOR_DARK -- ,iconUrls.Icon, iconUrls.Icon_Big
-	ORDER BY ServerTIme.LOG_START_NR;
+	ORDER BY ServerTime.LOG_START_NR;
 
 	SELECT Players.LOG_SYS_NR AS 'Log', Players.LOG_ACC_TE AS 'Account', CASE WHEN Roles.LOG_ROL_TE IS NULL THEN 'None' ELSE Roles.LOG_ROL_TE END AS 'Role'
 	FROM tblPlayers Players
@@ -195,20 +195,50 @@ BEGIN
 		SELECT LOG_ACC_TE
 		FROM tblPlayers
 		GROUP BY LOG_ACC_TE) Players
-	INNER JOIN smp.ilogply_players LoggedPlayers
+	INNER JOIN smp.ILOGPLY_PLAYERS LoggedPlayers
 		ON Players.LOG_ACC_TE=LoggedPlayers.LOG_ACC_TE 
-	INNER JOIN smp.ilogser_servertime ServerTime
+	INNER JOIN smp.ILOGSER_SERVERTIME ServerTime
 		ON LoggedPlayers.LOG_SYS_NR=ServerTime.LOG_SYS_NR
 	GROUP BY Players.LOG_ACC_TE, FROM_UNIXTIME(ServerTime.LOG_START_NR, '%Y-%m-%d')
     ORDER BY Players.LOG_ACC_TE, FROM_UNIXTIME(ServerTime.LOG_START_NR, '%Y-%m-%d');
 
 	DROP TABLE IF EXISTS tblPlayers;
 END//
--- CALL web.vue_details(UNIX_TIMESTAMP('2020-07-01 18:00:00'), UNIX_TIMESTAMP('2020-07-03 21:45:00'));
+-- CALL web.vue_details(UNIX_TIMESTAMP('2020-06-01 18:00:00'), UNIX_TIMESTAMP('2020-07-08 21:45:00'));
 -- CALL web.vue_details(1593651600, 1593837900);
+-- CALL web.vue_details(1591405200,1591426799);
 
 CREATE PROCEDURE web.getAllStartDates()
 BEGIN
-	SELECT FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date' FROM smp.ilogser_servertime GROUP BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') ORDER BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
+	SELECT FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date' FROM smp.ILOGSER_SERVERTIME GROUP BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') ORDER BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
 END//
 -- CALL web.getAllStartDates()
+DELIMITER //
+CREATE PROCEDURE web.vue_attendence(jsonObject JSON)
+BEGIN
+	SELECT Players.LOG_ACC_TE, FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date', GROUP_CONCAT(DISTINCT ReportJSON.LOG_JSON_TE->>'$.fightName' ORDER BY ReportJSON.LOG_JSON_TE->>'$.fightName') AS 'Fights'
+    FROM smp.ILOGSER_SERVERTIME ServerTime
+    INNER JOIN smp.ILOGPLY_PLAYERS Players
+    ON ServerTime.LOG_SYS_NR=Players.LOG_SYS_NR
+    INNER JOIN rpt.IRPTJSON ReportJSON
+    ON ServerTime.LOG_SYS_NR=ReportJSON.LOG_SYS_NR
+	WHERE   ((JSON_EXTRACT(jsonObject, '$.selection')='NONE')
+		OR (JSON_EXTRACT(jsonObject, '$.selection')='ACCOUNTS' AND Players.LOG_ACC_TE IN (SELECT Accounts.LOG_ACC_NA
+											FROM JSON_TABLE(JSON_EXTRACT(jsonObject, '$.accounts') ,'$[*]' COLUMNS ( LOG_ACC_NA NVARCHAR(256) PATH '$' )) AS Accounts))
+        OR (JSON_EXTRACT(jsonObject, '$.selection')='DATES' AND FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') IN (SELECT Dates.LOG_DATE
+																  FROM JSON_TABLE(JSON_EXTRACT(jsonObject, '$.dates') ,'$[*]' COLUMNS ( LOG_DATE NVARCHAR(256) PATH '$' )) AS Dates))
+        OR (JSON_EXTRACT(jsonObject, '$.selection')='BOTH' AND Players.LOG_ACC_TE IN (SELECT Accounts.LOG_ACC_NA
+											FROM JSON_TABLE(JSON_EXTRACT(jsonObject, '$.accounts') ,'$[*]' COLUMNS ( LOG_ACC_NA NVARCHAR(256) PATH '$' )) AS Accounts) 
+				 AND FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') IN (SELECT Dates.LOG_DATE
+																 FROM JSON_TABLE(JSON_EXTRACT(jsonObject, '$.dates') ,'$[*]' COLUMNS ( LOG_DATE NVARCHAR(256) PATH '$' )) AS Dates)))
+		
+		 AND (NOT JSON_CONTAINS(jsonObject, 'true', '$.exclusions.raids')      OR NOT EXISTS(SELECT 1 FROM rpt.TRPTBOS WHERE BOS_NAM_TE=ReportJSON.LOG_JSON_TE->>'$.fightName' AND BOS_TYP_CD=0))
+         AND (NOT JSON_CONTAINS(jsonObject, 'true', '$.exclusions.strikes')    OR NOT EXISTS(SELECT 1 FROM rpt.TRPTBOS WHERE BOS_NAM_TE=ReportJSON.LOG_JSON_TE->>'$.fightName' AND BOS_TYP_CD=1))
+		 AND (NOT JSON_CONTAINS(jsonObject, 'true', '$.exclusions.fractals')   OR NOT EXISTS(SELECT 1 FROM rpt.TRPTBOS WHERE BOS_NAM_TE=ReportJSON.LOG_JSON_TE->>'$.fightName' AND BOS_TYP_CD=2))   
+         AND (NOT JSON_CONTAINS(jsonObject, 'true', '$.exclusions.others')     OR NOT EXISTS(SELECT 1 FROM rpt.TRPTBOS WHERE BOS_NAM_TE=ReportJSON.LOG_JSON_TE->>'$.fightName' AND BOS_TYP_CD=3))
+		
+    GROUP BY Players.LOG_ACC_TE, FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d')
+    ORDER BY Players.LOG_ACC_TE, FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
+END//
+-- CALL web.vue_attendence('{"selection": "NONE", "exclusions": {"raids": false, "fractals": true, "strikes": true, "others": true}}')
+-- CALL web.vue_attendence('{}');

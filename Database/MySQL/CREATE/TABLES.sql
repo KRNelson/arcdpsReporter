@@ -304,6 +304,73 @@ CREATE TABLE IF NOT EXISTS rpt.TRPTFIL (
     LOG_HTML_TE VARCHAR(256)
 );
 
+CREATE TABLE IF NOT EXISTS rpt.TRPTBOS_TYP (
+	BOS_TYP_CD TINYINT PRIMARY KEY,
+    BOS_TYP_TE NVARCHAR(256)
+);
+
+INSERT INTO rpt.TRPTBOS_TYP
+VALUES
+(0, 'Raid'),
+(1, 'Strike'),
+(2, 'Fractal'),
+(3, 'Other');
+
+CREATE TABLE IF NOT EXISTS rpt.TRPTBOS (
+	BOS_NAM_TE NVARCHAR(256),
+    BOS_TYP_CD TINYINT
+);
+
+INSERT INTO rpt.TRPTBOS
+VALUES
+('Xera',0),
+('Whisper of Jormag',1),
+('Vale Guardian',0),
+('Twisted Castle',0),
+('Twin Largos',0),
+('Super Kodan Brothers',1),
+('Statue of Ice',0),
+('Statue of Death',0),
+('Statue of Darkness',0),
+('Soulless Horror',0),
+('Slothasor',0),
+('Skorvald the Shattered CM',2),
+('Samarog',0),
+('Sabetha the Saboteur',0),
+('River of Souls',0),
+('Qadim the Peerless',0),
+('Qadim',0),
+('Mursaat Overseer CM',0),
+('Mursaat Overseer',0),
+('Matthias Gabrel',0),
+('Keep Construct',0),
+('Icebrood Construct',1),
+('Gorseval the Multifarious',0),
+('Fraenir of Jormag',1),
+('Dhuum CM',0),
+('Dhuum',0),
+('Deimos',0),
+('ch22711-57',3),
+('Cardinal Sabir',0),
+('Cardinal Adina CM',0),
+('Cardinal Adina',0),
+('Cairn CM',0),
+('Cairn',0),
+('Boneskinner',1),
+('Bandit Trio',0),
+('Artsariiv',2),
+('Arkk',2),
+('Soulless Horror CM',0),
+('Deimos CM',0),
+('Conjured Amalgamate CM',0),
+('Conjured Amalgamate',0),
+('ch22711-95',3),
+('',3),
+('ch22711-118',3),
+('Ensolyss of the Endless Torment',2),
+('Twin Largos CM',0),
+('ag97',3);
+
 -------------------------------------------------------------------
 -- gw2 schema used for containing values specific for the game
 -------------------------------------------------------------------
