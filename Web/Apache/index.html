@@ -1,0 +1,163 @@
+<!--
+    https://codepen.io/pen/?&editable=true&editors=101
+-->
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+        <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+
+        <!-- development version, includes helpful console warnings -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+        <script src="https://unpkg.com/vuejs-datepicker"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <v-app id="raid-logs">
+                <v-row>
+                    <v-col col="12">
+                        <vuejs-datepicker @selected="updateStart" :value="strStart(intStart)" :inline="true"></vuejs-datepicker>
+                        <!--
+                        <v-switch v-model="blnSuccessOnly" label="Successful Pulls Only" class="mx-4"></v-switch>
+                        <v-data-table
+                            :headers="arrAttendenceSummaryHeaders"
+                            :items="processedArrAttendenceSummary"
+                            group-by="account"
+                            show-group-by
+                        >
+                        <template v-slot:group="{ group, headers, items }">
+                            <tr>
+                                <td :colspan="headers.length">
+                                    <span class="font-weight-bold">
+                                        {{ group }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr v-for="(item, index) in items" :key="item.id">
+                                <td v-for="header in headers">
+                                    {{ item[header.value] }}
+                                </td>
+                            </tr>
+                        </template>
+                        </v-data-table>
+                    -->
+                    </v-col>
+                    
+                <!-- Table Controls -->
+                    <!--
+                    <v-col cols="8" md="6">
+                        <v-text-field
+                        v-model="height"
+                        class="mx-4"
+                        label="Height - px"
+                        max="500"
+                        min="1"
+                        step="1"
+                        style="width: 100%"
+                        type="number"
+                        @keydown="false"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="4" md="3">
+                        <v-switch v-model="dense" label="Toggle dense" class="mx-4"></v-switch>
+                    </v-col>
+                    <v-col cols="4" md="3">
+                        <v-switch v-model="fixedHeader" label="Toggle fixed-header" class="mx-4"></v-switch>
+                    </v-col>
+                    -->
+                </v-row>
+                <v-row v-if="!blnSuccessOnly">
+                    <v-col col="12">
+                        <line-chart style="margin-left: 10px;" v-bind:labels="burnChartLabels" v-bind:data="burnChartData"></line-chart>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col col="12">
+                        <line-chart v-bind:labels="dpsChartLabels" v-bind:data="dpsChartData"></line-chart>
+                    </v-col>
+                </v-row>
+                <v-row>
+                <v-col col="12">
+                <v-data-table
+                    :headers="headers"
+                    :items="filteredLogs"
+                    :dense="dense"
+                    :fixed-header="fixedHeader"
+                    :single-expand="true"
+                    :loading="blnLoading"
+                    show-expand
+                >
+                <template v-slot:item="{ item, isExpanded, expand }">
+                    <tr @click="expand(!isExpanded)" :style="{backgroundColor: (item.json==null?'black':(item.json.success?'green':'red'))}">
+                        <td> {{ item.unixStart }}</td>
+                        <td> {{ (item.json || {duration: ''}).duration}}</td>
+                        <td>
+                            {{ (item.json || {fightName: ''}).fightName }}
+                        </td>
+                        <!--
+                        <td>
+                            <v-btn @click="expand(true)" v-if="item.json && !isExpanded">Expand</v-btn>
+                            <v-btn @click="expand(false)" v-if="item.json && isExpanded">close</v-btn>
+                        </td>
+                        -->
+                    </tr>
+                </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length">
+                        <v-card>
+                            <iframe id="dpsReport" width="100%" height="1250px" @load="setiFrameHeight()" :src="'/reports/' + item.strFile"></iframe>
+                            <!--<iframe id="dpsReport" @load="loadiFrame(item.json)" width="100%" height="1250px" src="dpsReport.html"></iframe>-->
+                        </v-card>
+                        </td>
+                    </template>
+                </v-data-table>
+                </v-col>
+                </v-row>
+                <v-row>
+                    <v-col>
+                        <v-data-table
+                            id="gw2AttendenceChart"
+                            :headers="filteredArrAttendenceHeaders"
+                            :items="processedArrAttendenceData"
+                            :fixed-header="true"
+                            :single-expand="true"
+                            show-expand
+                        >
+                            <template v-slot:item="{ item, isExpanded, expand, isSelected, select }">
+                                <tr @mouseover="select(!isSelected)">
+                                    <td>{{ item.Start }}</td>
+                                    <td @click="expand(!isExpanded)">{{ item.Boss.name }}</td>
+                                    <td :style="{background: `url(${(value.blnPresent)?value.profession.Icon:''})`, 
+                                                backgroundColor: ((value.blnPresent)?((value.profession !== undefined)?((!isSelected)?value.profession.Color_light:value.profession.Color_medium):'green'):'red')
+                                            }" 
+                                        v-if="propertyName!='Start' && propertyName!='Boss' && propertyName!='id'" 
+                                        v-for="(value, propertyName) in item"> 
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-slot:expanded-item="{ headers, item }">
+                                <td :colspan="headers.length">
+                                    <v-card>
+                                        <iframe width="100%" height="450px" :src="'/reports/' + item.Boss.strFile"></iframe>
+                                        <!--<iframe id="dpsReport" @load="loadiFrame(item.json)" width="100%" height="1250px" src="dpsReport.html"></iframe>-->
+                                    </v-card>
+                                </td>
+                            </template>
+                        </v-data-table>
+                    </v-col>
+                </v-row>
+            </v-app>
+        </div>
+    </body>
+</html>

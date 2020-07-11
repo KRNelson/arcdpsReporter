@@ -1,2 +1,4 @@
-Parsers/Elite Insights Parsers/GuildWars2EliteInsights.exe
+Parsers/Elite Insights Parsers/Executable/*
+Parsers/Elite Insights Parsers/reports/*
 Parsers/Simple Parser/SimpleParser.exe
+Web/Apache/reports/*.html
