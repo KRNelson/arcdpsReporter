@@ -26,6 +26,7 @@ $(() => {
             vuejsDatepicker,
         },
         data: function() {return {
+            strBaseURL: document.location.origin,
             intStart: moment(new Date('4/7/2020')).unix(), // 1586221200,
             intEnd: moment(new Date('4/8/2020')).unix(),// 1586241900,
             blnLoading: true,
@@ -189,7 +190,7 @@ $(() => {
             fetchData: function() {
                 let self = this
                 self.blnLoading = true;
-                fetch("http://localhost:5000/vue?intStart=" + self.intStart + "&intEnd=" + self.intEnd)
+                fetch(self.strBaseURL + ":5000/vue?intStart=" + self.intStart + "&intEnd=" + self.intEnd)
                     .then((response) => {
                         return response.json()
                     })
