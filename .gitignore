@@ -2,3 +2,5 @@ Parsers/Elite Insights Parsers/Executable/*
 Parsers/Elite Insights Parsers/reports/*
 Parsers/Simple Parser/SimpleParser.exe
 Web/Apache/reports/*.html
+Web/Node/node_modules/*
+Web/Node/package-lock.json
