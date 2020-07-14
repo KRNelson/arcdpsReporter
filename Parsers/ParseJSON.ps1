@@ -1,3 +1,4 @@
+$OutputEncoding = [System.Text.Encoding]::utf8
 # Given a log file, parses that log file using both the Simple and Elite parsers.
 # Generates a json representation of the log file parsed, to be passed into a database for processing. 
 $LogFile = $args[0]
@@ -14,7 +15,7 @@ $EliteParserHTML = Copy-Item -Path '.\Elite Insights Parsers\reports\*.html' -De
 Move-Item -Path '.\Elite Insights Parsers\reports\*.html' -Destination '.\..\Web\Apache\reports' -Force
 
 # JSON file is uploaded to the database. 
-$EliteParserJSON = Move-Item -Path '.\Elite Insights Parsers\reports\*.json' -Destination '.\Elite Insights Parsers\reports\json' -Force -PassThru | Get-Content -Raw | ConvertFrom-JSON
+$EliteParserJSON = Move-Item -Path '.\Elite Insights Parsers\reports\*.json' -Destination '.\Elite Insights Parsers\reports\json' -Force -PassThru | Get-Content -Encoding utf8 | ConvertFrom-JSON
 Copy-Item -Path $LogFile -Destination '.\Elite Insights Parsers\reports\evtc' -Force
 
 # Final result of what will be sent to the database. 
