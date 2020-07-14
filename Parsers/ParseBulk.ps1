@@ -12,6 +12,13 @@ function GetFiles($path = $pwd, [string[]]$exclude)
         {
             GetFiles $item.FullName $exclude
         } 
+        elseif ($item -like "*.lnk")
+        {
+            # GetFiles $item.FullName $exclude
+            $sh = New-Object -ComObject WScript.Shell
+            $sc = $sh.CreateShortcut($item.FullName)
+            GetFiles $sc.TargetPath $exclude
+        }
         else 
         { 
             if( $item -like "*.evtc" -AND $item.lastwritetime -gt $LogStart -AND $item.lastwritetime -lt $LogEnd) {

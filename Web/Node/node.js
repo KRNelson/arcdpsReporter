@@ -2,9 +2,10 @@ var http = require('http');
 var url = require('url');
 var mysql = require('mysql');
 var objConn = {
-        host: "",
-        user: "",
-        password: ""
+    host: "",
+    user: "",
+    password: "",
+    charset: ''
 };
 
 var gw2AllStartDates = function(res) {
@@ -92,6 +93,32 @@ var gw2attendence = function(res, jsonObject) {
     });    
 }
 
+var gw2historicalRoles = function(res) {
+    var con = mysql.createConnection(objConn);
+
+    con.connect(function(err) {
+        if(err) {
+            con.end();
+            return err; 
+            // throw err;
+        }
+        con.query("CALL web.vue_historicalRoles()", function(err, result, fields) {
+            if(err) {
+                con.end();
+                return err;
+            }
+            // set response header
+            res.writeHead(200, { 'Content-Type': 'text/html' ,
+                                 "Access-Control-Allow-Origin" : "*"
+                               }); 
+
+            // set response content
+            res.write(JSON.stringify(result));
+            con.end();
+            res.end();
+       })
+    });    
+}
 
 http.createServer(function(req, res) {
     const queryObject = url.parse(req.url, true).query;
@@ -107,6 +134,9 @@ http.createServer(function(req, res) {
             break;
         case "/attendence":
             gw2attendence(res, queryObject.jsonObject);
+            break;
+        case "/historical":
+            gw2historicalRoles(res);
             break;
         default:
             // homepage(req,res);

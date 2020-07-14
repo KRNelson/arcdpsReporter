@@ -1,6 +1,8 @@
-Parsers/Elite Insights Parsers/Executable/*
+Parsers/Elite Insights Parsers/GuildWars2EliteInsights.exe
 Parsers/Elite Insights Parsers/reports/*
+Parsers/Elite Insights Parsers/Executable/*
 Parsers/Simple Parser/SimpleParser.exe
 Web/Apache/reports/*.html
 Web/Node/node_modules/*
 Web/Node/package-lock.json
+Web/Apache/reports/*

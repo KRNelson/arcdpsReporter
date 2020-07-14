@@ -19,17 +19,6 @@ BEGIN
               ,jsonObject->>'$.file.hash'
 		);
         
-		INSERT INTO rpt.IRPTJSON(LOG_SYS_NR, LOG_JSON_TE)
-		VALUES(@newID
-              ,jsonObject->>'$.parsers.elite'
-		);
-        
-        INSERT INTO rpt.TRPTFIL(LOG_SYS_NR, LOG_LOG_TE, LOG_HTML_TE)
-        VALUES(@newID
-              ,jsonObject->>'$.file.log'
-              ,jsonObject->>'$.file.html'
-        );
-        
         INSERT INTO smp.ILOGBOS_BOSS(LOG_SYS_NR, LOG_DUR_NR, LOG_BOS_ID, LOG_CM_IR, LOG_LOC_NR, LOG_BOS_HP_NR, LOG_BOS_TE, LOG_SUC_IR)
         VALUES(@newID
 			  ,jsonObject->>'$.parsers.simple.boss.duration'
@@ -85,6 +74,92 @@ BEGIN
               ,jsonObject->>'$.parsers.simple.simpleArcParse.version'
         );
         
+		INSERT INTO rpt.IRPTJSON(LOG_SYS_NR, LOG_JSON_TE)
+		VALUES(@newID
+              ,jsonObject->>'$.parsers.elite'
+		);
+        
+        INSERT INTO rpt.TRPTFIL(LOG_SYS_NR, LOG_LOG_TE, LOG_HTML_TE)
+        VALUES(@newID
+              ,jsonObject->>'$.file.log'
+              ,jsonObject->>'$.file.html'
+        );
+        
+        INSERT INTO rpt.ILOGELT_INSIGHTS(LOG_SYS_NR, LOG_CM_IR, LOG_SUC_IR, LOG_ELI_VER, LOG_TRG_ID, LOG_FGT_NA, LOG_FGT_IC, LOG_ARC_VER, LOG_GW_VER, LOG_LANG_TE, LOG_LANG_NR, LOG_REC_TE, LOG_STR_DT, LOG_END_DT, LOG_DUR_DT)
+        VALUES(@newID
+			  ,jsonObject->>'$.parsers.elite.isCM'
+			  ,jsonObject->>'$.parsers.elite.success'
+			  ,jsonObject->>'$.parsers.elite.eliteInsightsVersion'
+			  ,jsonObject->>'$.parsers.elite.triggerID'
+			  ,jsonObject->>'$.parsers.elite.fightName'
+			  ,jsonObject->>'$.parsers.elite.fightIcon'
+			  ,jsonObject->>'$.parsers.elite.arcVersion'
+			  ,jsonObject->>'$.parsers.elite.gW2Build'
+			  ,jsonObject->>'$.parsers.elite.language'
+			  ,jsonObject->>'$.parsers.elite.languageID'
+			  ,jsonObject->>'$.parsers.elite.recordedBy'
+			  ,jsonObject->>'$.parsers.elite.timeStartStd'
+			  ,jsonObject->>'$.parsers.elite.timeEndStd'
+			  ,jsonObject->>'$.parsers.elite.duration'
+        );
+        
+        INSERT INTO rpt.IRPTPLY_PLAYERS(LOG_SYS_NR, LOG_CHR_ID, LOG_ACT_ID, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_TAG_IR, LOG_GRP_NR, LOG_CND_NR, LOG_CON_NR, LOG_HEL_NR, LOG_TOU_NR)
+        SELECT @newID AS LOG_SYS_NR
+              ,SHA(Players.LOG_CHR_NA) AS LOG_CHR_ID        
+			  ,Players.LOG_ACT_ID
+			  ,Players.LOG_ACC_NA
+			  ,Players.LOG_CHR_NA
+			  ,Players.LOG_PRO_NA
+			  ,Players.LOG_TAG_IR
+			  ,Players.LOG_GRP_NR
+			  ,Players.LOG_CND_NR
+              ,Players.LOG_CON_NR
+			  ,Players.LOG_HEL_NR
+			  ,Players.LOG_TOU_NR
+	   FROM JSON_TABLE(jsonObject->> '$.parsers.elite.players'
+                      ,'$[*]' COLUMNS (
+                        LOG_ACT_ID INT PATH '$.instanceID'
+					   ,LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+ 					   ,LOG_CHR_NA NVARCHAR(256) PATH '$.name'
+					   ,LOG_PRO_NA NVARCHAR(256) PATH '$.profession'
+                       ,LOG_TAG_IR BOOL PATH '$.hasCommanderTag'
+                       ,LOG_GRP_NR INT PATH '$.group'
+                       ,LOG_CND_NR INT PATH '$.condition'
+                       ,LOG_CON_NR INT PATH '$.concentration'
+                       ,LOG_HEL_NR INT PATH '$.healing'
+                       ,LOG_TOU_NR INT PATH '$.toughness'
+                      )) AS Players;
+		
+		INSERT INTO rpt.IRPTMCH_MECHANICS(LOG_SYS_NR, LOG_MCH_ID, LOG_MCH_NA, LOG_DSC_TE)
+		SELECT @newID AS LOG_SYS_NR
+              ,SHA(Mechanics.LOG_MCH_NA) AS LOG_MCH_ID
+              ,Mechanics.LOG_MCH_NA
+              ,Mechanics.LOG_DSC_TE
+		FROM JSON_TABLE(jsonObject->>'$.parsers.elite.mechanics'
+				,'$[*]' COLUMNS(
+					LOG_MCH_NA NVARCHAR(256) PATH '$.name'
+				   ,LOG_DSC_TE NVARCHAR(256) PATH '$.description'
+		)) Mechanics;
+        
+        
+        INSERT INTO rpt.IRPTMCH_PLAYERS(LOG_SYS_NR, LOG_MCH_ID, LOG_CHR_ID, LOG_MCH_DT)
+		SELECT @newID AS LOG_SYS_NR
+              ,SHA(Mechanics.LOG_MCH_NA) AS LOG_MCH_ID
+              ,SHA(Players.LOG_CHR_NA) AS LOG_CHR_ID
+			  ,Players.LOG_MCH_DT             
+		FROM JSON_TABLE(jsonObject->>'$.parsers.elite.mechanics'
+				,'$[*]' COLUMNS(
+					LOG_MCH_NA NVARCHAR(256) PATH '$.name'
+				   ,LOG_MCH_TBL JSON PATH '$.mechanicsData'
+			)) Mechanics
+			,JSON_TABLE(Mechanics.LOG_MCH_TBL->>'$'
+				,'$[*]' COLUMNS(
+					LOG_MCH_DT INT PATH '$.time'
+				   ,LOG_CHR_NA NVARCHAR(256) PATH '$.actor'
+			)) Players
+		-- Needed to exclude boss mechanics from being recorded in the player mechanics table. 
+		WHERE EXISTS(SELECT 1 FROM rpt.IRPTPLY_PLAYERS WHERE LOG_SYS_NR=@newID AND LOG_CHR_ID=SHA(Players.LOG_CHR_NA));
+
 	END IF;
 
 END//
@@ -213,7 +288,7 @@ BEGIN
 	SELECT FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date' FROM smp.ILOGSER_SERVERTIME GROUP BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') ORDER BY FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
 END//
 -- CALL web.getAllStartDates()
-DELIMITER //
+
 CREATE PROCEDURE web.vue_attendence(jsonObject JSON)
 BEGIN
 	SELECT Players.LOG_ACC_TE, FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d') AS 'Date', GROUP_CONCAT(DISTINCT ReportJSON.LOG_JSON_TE->>'$.fightName' ORDER BY ReportJSON.LOG_JSON_TE->>'$.fightName') AS 'Fights'
