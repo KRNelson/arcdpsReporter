@@ -6,3 +6,4 @@ Web/Apache/reports/*.html
 Web/Node/node_modules/*
 Web/Node/package-lock.json
 Web/Apache/reports/*
+Parsers/test.zevtc
