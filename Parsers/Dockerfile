@@ -12,6 +12,7 @@ RUN unzip GW2EI.zip
 
 RUN mkdir reports
 RUN chmod +777 reports
+VOLUME ["/reports"]
 
 ADD report.conf report.conf
 ADD test.zevtc test.zevtc
