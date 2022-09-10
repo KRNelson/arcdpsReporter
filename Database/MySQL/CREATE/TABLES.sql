@@ -1,6 +1,6 @@
-----------------------------------------------------------------
+/*---------------------------------------------------------------
 -- log schema used for representing the log file being uploaded
-----------------------------------------------------------------
+----------------------------------------------------------------*/
 
 -- Log Catalog contains an ID for each log uploaded
 CREATE TABLE IF NOT EXISTS log.TLOGCAT (
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS log.TLOGFIL (
     FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE
 );
 
-----------------------------------------------------------------
+/*--------------------------------------------------------------
 -- smp schema used for representing the results of the Simple Parser
 -- Values are determined based on Enums in the C++ code for the parser. 
-----------------------------------------------------------------
+----------------------------------------------------------------*/
 
 -- Simple boss header details. 
 CREATE TABLE IF NOT EXISTS smp.ILOGBOS_BOSS (
@@ -286,9 +286,9 @@ CREATE TABLE IF NOT EXISTS smp.ILOGVER_SIMPLEARCVERSION (
 );
 
 
-----------------------------------------------------------------
+/*--------------------------------------------------------------
 -- rpt schema used for representing the results of the Elite Insights Parser 
-----------------------------------------------------------------
+----------------------------------------------------------------*/
 
 -- Start with just storing the JSON.
 -- TODO: Expand on tables as queries on the json develop. 
@@ -311,9 +311,9 @@ CREATE TABLE IF NOT EXISTS rpt.ILOGELT_INSIGHTS(
    ,LOG_LANG_TE VARCHAR(256)
    ,LOG_LANG_NR INT  
    ,LOG_REC_TE NVARCHAR(256)
-   ,LOG_STR_DT DATETIME
-   ,LOG_END_DT DATETIME
-   ,LOG_DUR_DT TIME
+   ,LOG_STR_DT VARCHAR(256)
+   ,LOG_END_DT VARCHAR(256)
+   ,LOG_DUR_DT VARCHAR(256)
    ,FOREIGN KEY(LOG_SYS_NR) REFERENCES log.TLOGCAT(LOG_SYS_NR) ON DELETE CASCADE
 );
 
@@ -428,9 +428,9 @@ VALUES
 ('Twin Largos CM',0),
 ('ag97',3);
 
--------------------------------------------------------------------
+/*-----------------------------------------------------------------
 -- gw2 schema used for containing values specific for the game
--------------------------------------------------------------------
+-------------------------------------------------------------------*/
 
 CREATE TABLE IF NOT EXISTS gw2.TWEBPROF_COLORS (
 	ID VARCHAR(256),
@@ -455,9 +455,9 @@ VALUES
 ('Necromancer'	,'#D5EDE1',	'#BFE6D0',	'#52A76F',	'#2C9D5D',	'#456C40'	,'{{n-color}}'),
 ('Any'			,'#EEEEEE',	'#DDDDDD',	'#BBBBBB',	'#666666',	' '         ,'{{any-color}}');
 
-------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
 -- rol contains information regarding specific roles that players have taken on during an encounter
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------*/
 CREATE TABLE IF NOT EXISTS rol.TPULROL_ROLES (
     LOG_SYS_NR CHAR(36),
 	LOG_ACC_TE NVARCHAR(256),
