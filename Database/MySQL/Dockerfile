@@ -9,10 +9,3 @@ ADD ./CREATE/PROCEDURES.sql ./docker-entrypoint-initdb.d/_03_PROCEDURES.sql
 ADD ./CREATE/USERS.sql ./docker-entrypoint-initdb.d/_04_USERS.sql
 
 EXPOSE 3306
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    inotify-tools
-
-ADD process.sh .
-
-# CMD ["/bin/bash", "process.sh"]

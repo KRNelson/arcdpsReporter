@@ -16,6 +16,7 @@ EXPOSE 3000
 # If you are building your code for production
 # RUN npm ci --only=production
 
-COPY node.js .
+COPY express.ts .
 
-CMD ["node", "node.js"]
+# CMD ["node", "node.js"]
+CMD ["npm", "start"]

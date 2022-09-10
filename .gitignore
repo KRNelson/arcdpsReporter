@@ -7,3 +7,7 @@ Web/Node/node_modules/*
 Web/Node/package-lock.json
 Web/Apache/reports/*
 Parsers/test.zevtc
+Logs/test.zevtc
+.gitignore
+Parsers/Elite Insights Parsers/test.zevtc
+Web/Elm/elm-stuff/*
