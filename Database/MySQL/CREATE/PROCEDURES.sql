@@ -8,22 +8,25 @@ BEGIN
 	
 	INSERT INTO log.TLOGCAT(LOG_SYS_NR)
 	VALUES(@newID);
+
+	INSERT INTO log.TLOGFIL(LOG_SYS_NR, LOG_FIL_TE)
+	VALUES(@newID, jsonObject->>'$.file');
 	
-	INSERT INTO rpt.ILOGELT_INSIGHTS(LOG_SYS_NR, LOG_CM_IR, LOG_SUC_IR, LOG_ELI_VER, LOG_TRG_ID, LOG_FGT_NA, LOG_FGT_IC, LOG_ARC_VER, LOG_GW_VER, LOG_LANG_TE, LOG_LANG_NR, LOG_REC_TE, LOG_STR_DT, LOG_END_DT, LOG_DUR_DT)
+	INSERT INTO rpt.ILOGELT_INSIGHTS(LOG_SYS_NR, LOG_CM_IR, LOG_SUC_IR, LOG_ELI_VER, LOG_TRG_ID, LOG_FGT_NA, /*LOG_FGT_IC,*/ LOG_ARC_VER, LOG_GW_VER, LOG_LANG_TE, LOG_LANG_NR, LOG_REC_TE, LOG_STR_DT, LOG_END_DT, LOG_DUR_DT)
 	VALUES(@newID
 			,CASE (jsonObject->>'$.isCM') WHEN 'true' THEN 1 WHEN 'false' THEN 0 ELSE NULL END
 			,CASE (jsonObject->>'$.success') WHEN 'true' THEN 1 WHEN 'false' THEN 0 ELSE NULL END
 			,jsonObject->>'$.eliteInsightsVersion'
 			,jsonObject->>'$.triggerID'
 			,jsonObject->>'$.fightName'
-			,jsonObject->>'$.fightIcon'
+			-- ,jsonObject->>'$.fightIcon'
 			,jsonObject->>'$.arcVersion'
 			,jsonObject->>'$.gW2Build'
 			,jsonObject->>'$.language'
 			,jsonObject->>'$.languageID'
 			,jsonObject->>'$.recordedBy'
-			,jsonObject->>'$.timeStartStd'
-			,jsonObject->>'$.timeEndStd'
+			,STR_TO_DATE(LEFT(jsonObject->>'$.timeStartStd', LENGTH(jsonObject->>'$.timeStartStd') - LENGTH(' +00:00')), '%Y-%m-%d %H:%i:%s')
+			,STR_TO_DATE(LEFT(jsonObject->>'$.timeEndStd', LENGTH(jsonObject->>'$.timeEndStd') - LENGTH(' +00:00')), '%Y-%m-%d %H:%i:%s')
 			,jsonObject->>'$.duration'
 	);
 	
@@ -53,6 +56,17 @@ BEGIN
 					,LOG_HEL_NR INT PATH '$.healing'
 					,LOG_TOU_NR INT PATH '$.toughness'
 					)) AS Players;
+
+/*
+	INSERT INTO rpt.IRPTROT_ROTATION(LOG_SYS_NR, LOG_ROT_ID, LOG_ROT_ACC, LOG_ROT_NA, LOG_ROT_CT, LOG_ROT_DUR, LOG_ROT_GN, LOG_ROT_QK)
+	SELECT @newID AS LOG_SYS_NR
+	FROM JSON_TABLE(jsonObject->>'$.rotations'
+	          ,'$[*]' COLUMNS(
+				LOG_ROT_ID INT PATH '$.id'
+				, LOG_ROT_ACC NVARCHAR(256) PATH '$.account'
+				, LOG_ROT_NA NVARCHAR(256) PATH '$...'
+			  )) Rotations;
+*/
 	
 	INSERT INTO rpt.IRPTMCH_MECHANICS(LOG_SYS_NR, LOG_MCH_ID, LOG_MCH_NA, LOG_DSC_TE)
 	SELECT @newID AS LOG_SYS_NR
@@ -83,17 +97,113 @@ BEGIN
 	-- Needed to exclude boss mechanics from being recorded in the player mechanics table. 
 	WHERE EXISTS(SELECT 1 FROM rpt.IRPTPLY_PLAYERS WHERE LOG_SYS_NR=@newID AND LOG_CHR_ID=SHA(Players.LOG_CHR_NA));
 
+	SELECT @newID AS ID;
+END//
+
+CREATE PROCEDURE web.importJson(jsonObject JSON)
+BEGIN
+	CALL log.importJSON(jsonObject);
+END//
+
+CREATE PROCEDURE web.getLogs()
+BEGIN
+	WITH Logs_CTE AS (
+		SELECT LOG_SYS_NR
+		     , LOG_CM_IR
+			 , LOG_SUC_IR
+			 , LOG_ELI_VER
+			 , LOG_TRG_ID
+			 , LOG_FGT_NA
+			 , LOG_ARC_VER
+			 , LOG_GW_VER
+			 , LOG_LANG_TE
+			 , LOG_LANG_NR
+			 , LOG_REC_TE
+			 , LOG_STR_DT
+			 , LOG_END_DT
+			 , LOG_DUR_DT
+		FROM rpt.ILOGELT_INSIGHTS
+	)
+	SELECT LOG_SYS_NR
+	     , LOG_CM_IR
+		 , LOG_SUC_IR
+		 , LOG_ELI_VER
+		 , LOG_TRG_ID
+		 , LOG_FGT_NA
+		 , LOG_ARC_VER
+		 , LOG_GW_VER
+		 , LOG_LANG_TE
+		 , LOG_LANG_NR
+		 , LOG_REC_TE
+		 , LOG_STR_DT
+		 , LOG_END_DT
+		 , LOG_DUR_DT
+	FROM Logs_CTE
+	;
+END//
+
+CREATE PROCEDURE web.postLogs(jsonObject JSON)
+BEGIN
+	WITH Logs_CTE AS (
+		SELECT LOG_SYS_NR
+		     , LOG_CM_IR
+			 , LOG_SUC_IR
+			 , LOG_ELI_VER
+			 , LOG_TRG_ID
+			 , LOG_FGT_NA
+			 , LOG_ARC_VER
+			 , LOG_GW_VER
+			 , LOG_LANG_TE
+			 , LOG_LANG_NR
+			 , LOG_REC_TE
+			 , LOG_STR_DT
+			 , LOG_END_DT
+			 , LOG_DUR_DT
+		FROM rpt.ILOGELT_INSIGHTS
+	)
+	SELECT LOG_SYS_NR
+	     , LOG_CM_IR
+		 , LOG_SUC_IR
+		 , LOG_ELI_VER
+		 , LOG_TRG_ID
+		 , LOG_FGT_NA
+		 , LOG_ARC_VER
+		 , LOG_GW_VER
+		 , LOG_LANG_TE
+		 , LOG_LANG_NR
+		 , LOG_REC_TE
+		 , LOG_STR_DT
+		 , LOG_END_DT
+		 , LOG_DUR_DT
+	FROM Logs_CTE A01
+	INNER JOIN JSON_TABLE(jsonObject->>'$.logs'
+		, '$[*]' COLUMNS(
+			LOG_SYS_NR CHAR(36) PATH '$.id'
+		)) LOGS
+		ON A01.LOG_SYS_NR = LOGS.LOG_SYS_NR
+	;
 END//
 
 CREATE PROCEDURE web.getPlayers()
 BEGIN
-	-- SELECT LOG_SYS_NR, LOG_CHR_ID, LOG_ACT_ID, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_TAG_IR, LOG_GRP_NR, LOG_CND_NR, LOG_CON_NR, LOG_HEL_NR, LOG_TOU_NR
 	SELECT LOG_ACC_NA
-	FROM rpt.IRPTPLY_PLAYERS
+	FROM rpt.IRPTPLY_PLAYERS PLY
 	GROUP BY LOG_ACC_NA;
 END//
 
-CREATE PROCEDURE web.getMechanicCounts()
+CREATE PROCEDURE web.postPlayers(jsonObject JSON)
+BEGIN
+	SELECT LOG_ACC_NA
+	FROM rpt.IRPTPLY_PLAYERS PLY
+	INNER JOIN JSON_TABLE(jsonObject->>'$.logs'
+		, '$[*]' COLUMNS(
+			LOG_SYS_NR CHAR(36) PATH '$.id'
+		)) LOGS
+		ON PLY.LOG_SYS_NR = LOGS.LOG_SYS_NR
+	GROUP BY LOG_ACC_NA;
+END//
+
+CREATE PROCEDURE web.getMechanics()
 BEGIN
 	WITH Mechanics_CTE AS (
 		SELECT PMCH.LOG_SYS_NR, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_NA, LOG_DSC_TE, COUNT(*) AS Total
@@ -112,20 +222,35 @@ BEGIN
 	)
 	SELECT LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_TE, TOT_NR, TOT_DSC_TE
 	FROM MechanicsTotal_CTE
-	ORDER BY LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_TE, TOT_NR, TOT_DSC_TE
 	;
 END//
 
-
-
-
-
-
-
-
-
-
-
+CREATE PROCEDURE web.postMechanics(jsonObject JSON)
+BEGIN
+	WITH Mechanics_CTE AS (
+		SELECT PMCH.LOG_SYS_NR, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_NA, LOG_DSC_TE, COUNT(*) AS Total
+		FROM rpt.IRPTPLY_PLAYERS PLY 
+		INNER JOIN rpt.IRPTMCH_PLAYERS PMCH
+			ON PLY.LOG_SYS_NR = PMCH.LOG_SYS_NR
+			AND PLY.LOG_CHR_ID = PMCH.LOG_CHR_ID
+		INNER JOIN rpt.IRPTMCH_MECHANICS MMCH
+			ON PMCH.LOG_SYS_NR = MMCH.LOG_SYS_NR
+			AND PMCH.LOG_MCH_ID = MMCH.LOG_MCH_ID
+		GROUP BY PMCH.LOG_SYS_NR, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_NA, LOG_DSC_TE
+	), MechanicsTotal_CTE AS (
+		SELECT LOG_SYS_NR, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, GROUP_CONCAT(LOG_MCH_NA) AS LOG_MCH_TE, SUM(Total) AS TOT_NR, GROUP_CONCAT(LOG_MCH_NA, ':', Total) AS TOT_DSC_TE
+		FROM Mechanics_CTE
+		GROUP BY LOG_SYS_NR, LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA
+	)
+	SELECT LOG_ACC_NA, LOG_CHR_NA, LOG_PRO_NA, LOG_MCH_TE, TOT_NR, TOT_DSC_TE
+	FROM MechanicsTotal_CTE A01
+	INNER JOIN JSON_TABLE(jsonObject->>'$.logs'
+		, '$[*]' COLUMNS(
+			LOG_SYS_NR CHAR(36) PATH '$.id'
+		)) LOGS
+		ON A01.LOG_SYS_NR = LOGS.LOG_SYS_NR
+	;
+END//
 
 
 
@@ -314,7 +439,3 @@ BEGIN
     ORDER BY Players.LOG_ACC_TE, FROM_UNIXTIME(LOG_START_NR, '%Y-%m-%d');
 END//
 
-CREATE PROCEDURE web.importJson(jsonObject JSON)
-BEGIN
-	CALL log.importJSON(jsonObject);
-END//

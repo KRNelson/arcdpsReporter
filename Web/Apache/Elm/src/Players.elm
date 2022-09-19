@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Players exposing (..)
 
 import Browser
 import Html exposing (Html, div, h1, input, text, button)
@@ -8,6 +8,8 @@ import Table
 
 import Json.Decode as Decode
 import Http
+
+import Logs exposing (..)
 
 main =
   -- Html.program
@@ -30,16 +32,20 @@ type alias Model =
   , message : String
   }
 
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-  let
-    model =
+default : Model
+default = 
       { players = []
       , tableState = Table.initialSort "Account"
       , query = ""
       , message = ""
       }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+  let
+    model =
+      default
   in
     ( model, Cmd.none )
 
@@ -56,7 +62,7 @@ type Msg
 
 playerDecoder : Decode.Decoder (List Player)
 playerDecoder =
-  (Decode.at ["data"] (Decode.list (Decode.map Player (Decode.at ["LOG_ACC_NA"] Decode.string))))
+  (Decode.at ["data"] (Decode.list (Decode.map Player (Decode.at ["account"] Decode.string))))
 
 getPlayers : Cmd Msg
 getPlayers =
@@ -64,6 +70,18 @@ getPlayers =
         { url = "http://localhost:3000/players"
         , expect = Http.expectJson GotPlayers playerDecoder
         }
+
+getPlayersFromLogs : List Logs.Log  -> Cmd Msg
+getPlayersFromLogs logs =
+  Http.request
+    { method = "POST"
+    , headers = []
+    , url = "http://localhost:3000/players"
+    , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
+    , expect = Http.expectJson GotPlayers playerDecoder
+    , timeout = Nothing
+    , tracker = Nothing
+    }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -107,15 +125,12 @@ view { players, tableState, query, message } =
   let
     lowerQuery =
       String.toLower query
-
     acceptablePeople =
       List.filter (String.contains lowerQuery << String.toLower << .account) players
   in
     div []
       [ h1 [] [ text "Player Accounts" ]
-      , h1 [] [ text message ]
       , input [ placeholder "Search by Account", onInput SetQuery ] []
-      , button [ onClick GetPlayers ] [ text "Get!" ]
       , Table.view config tableState acceptablePeople
       ]
 
@@ -132,9 +147,7 @@ config =
 
 
 
--- PEOPLE
-
-
+-- PLAYER
 type alias Player =
   { account : String
   }

@@ -30,9 +30,12 @@ type alias Model =
   , files : List File
   }
 
+default : Model
+default = Model Nothing []
+
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( Model Nothing [], Cmd.none )
+  ( default , Cmd.none )
 
 -- UPDATE
 type Msg
@@ -84,13 +87,20 @@ view : Model -> Html Msg
 view model =
   case model.log of
     Nothing ->
-      form []
-      [
-        input [ type_ "button", onClick LogRequested, value "Load Log" ] []
-      ]
+        div []
+        [ form []
+        [
+            input [ type_ "button", onClick LogRequested, value "Load Log" ] []
+        ]
+        ]
 
     Just content ->
-      p [ style "white-space" "pre" ] [ text content ]
+        div []
+        [ p [ style "white-space" "pre" ] [ text content ]
+        , form []
+            [ input [type_ "button", onClick LogRequested, value "Load Log"] []
+            ]
+        ]
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg

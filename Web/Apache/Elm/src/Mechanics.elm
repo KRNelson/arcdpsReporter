@@ -9,6 +9,8 @@ import Table
 import Json.Decode as Decode
 import Http
 
+import Logs exposing (..)
+
 main =
   Browser.element
     { init = init
@@ -38,16 +40,20 @@ type alias Model =
   , state : State
   }
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-  let
-    model =
+default : Model
+default = 
       { mechanics = []
       , tableState = Table.initialSort "Account"
       , query = ""
       , message = ""
       , state = Loading
       }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+  let
+    model = default
   in
     ( model, getMechanics )
 
@@ -62,12 +68,12 @@ mechanicDecoder =
   (Decode.at ["data"] (
     Decode.list (
         Decode.map6 Mechanic
-            (Decode.at ["LOG_ACC_NA"] Decode.string)
-            (Decode.at ["LOG_CHR_NA"] Decode.string)
-            (Decode.at ["LOG_PRO_NA"] Decode.string)
-            (Decode.at ["LOG_MCH_TE"] Decode.string)
-            (Decode.at ["TOT_NR"] Decode.int)
-            (Decode.at ["TOT_DSC_TE"] Decode.string)
+            (Decode.at ["account"] Decode.string)
+            (Decode.at ["character"] Decode.string)
+            (Decode.at ["profession"] Decode.string)
+            (Decode.at ["mechanics"] Decode.string)
+            (Decode.at ["total"] Decode.int)
+            (Decode.at ["descriptive"] Decode.string)
         )))
 
 getMechanics : Cmd Msg
@@ -76,6 +82,18 @@ getMechanics =
         { url = "http://localhost:3000/mechanics"
         , expect = Http.expectJson GotMechanics mechanicDecoder
         }
+
+getMechanicsFromLogs : List Logs.Log  -> Cmd Msg
+getMechanicsFromLogs logs =
+  Http.request
+    { method = "POST"
+    , headers = []
+    , url = "http://localhost:3000/mechanics"
+    , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
+    , expect = Http.expectJson GotMechanics mechanicDecoder
+    , timeout = Nothing
+    , tracker = Nothing
+    }
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -124,12 +142,13 @@ view { mechanics, tableState, query, message, state } =
       Loading ->
         div []
             [
-                h1 [] [text "Player Accounts"]
+                h1 [] [text "Player Mechanics"]
                 , text "loading..."
+                , text message
             ]
       Loaded ->
         div []
-            [ h1 [] [ text "Player Accounts" ]
+            [ h1 [] [ text "Player Mechanics" ]
             , input [ placeholder "Search by Account", onInput SetQuery ] []
             , Table.view config tableState acceptablePeople
             ]

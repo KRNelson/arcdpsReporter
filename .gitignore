@@ -11,3 +11,6 @@ Logs/test.zevtc
 .gitignore
 Parsers/Elite Insights Parsers/test.zevtc
 Web/Elm/elm-stuff/*
+Web/Apache/Elm/elm-stuff/*
+Web/Apache/Elm/node_modules/*
+Web/Apache/Elm/elm.js
