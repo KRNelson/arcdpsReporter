@@ -18,7 +18,7 @@ testBootstrapAlert html =
         [ test "Expect Cancel" <|
             \_ ->
                 let
-                    content = "Hello World"
+                    content = "Hello World!"
                     query = [ Selector.text "x", Selector.classes ["btn", "close"] ]
                 in
                     html content
