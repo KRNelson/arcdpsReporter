@@ -2,5 +2,5 @@ language: elm
 elm:
   - elm0.19.1 # default, or equivalently, '0.19.0'
 elm-test: 0.19.1-rev9
-node_js: '8.3.1' # latest 10.x
+node_js: '10' # latest 10.x
 script: sh -e 'cd Web/Apache/Elm && npx elm-test'
