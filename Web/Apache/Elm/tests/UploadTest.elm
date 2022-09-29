@@ -144,7 +144,7 @@ suite =
                 \_ -> 
                     let
                         expected = div [] [ U.viewForm ]
-                        model = U.Model Nothing []
+                        model = U.Model [] Nothing
                     in 
                         U.view model
                             |> Expect.equal expected
@@ -152,7 +152,7 @@ suite =
                 \_ -> 
                     let
                         content = "Hello World"
-                        model = (U.Model (Just content) [])
+                        model = (U.Model [] (Just (Ok content)))
                         expected = div [] [ U.viewContent content, U.viewForm ]
                     in 
                         U.view model
@@ -160,7 +160,7 @@ suite =
             , fuzz string "Fuzzy Content" <|
                 \randomContent ->
                     let
-                        model = (U.Model (Just randomContent) [])
+                        model = (U.Model [] (Just (Ok randomContent)))
                         expected = div [] [U.viewContent randomContent, U.viewForm]
                     in 
                         U.view model
