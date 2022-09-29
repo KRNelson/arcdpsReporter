@@ -139,7 +139,7 @@ app.use(morgan('dev'));
 
 // Handling '/' Request
 app.get('/', (_req, _res) => {
-    _res.send("TypeScript With Expresss");
+    _res.send("TypeScript With Express");
 });
  
 const objConn : PoolConfig = {
@@ -355,8 +355,11 @@ app.post('/upload', async (req, res) => {
     }
 });
 
+
 // Server setup
-app.listen(port, () => {
+export const server = app.listen(port, () => {
     console.log(`TypeScript with Express
          http://localhost:${port}/`);
 });
+
+export default app
