@@ -8,8 +8,8 @@ import Test exposing (..)
 import Test.Html.Query as Query
 import Test.Html.Selector as Selector
 
-import Html exposing (Html, button, p, text, input, form, div)
-import Html.Attributes exposing (style, type_, action, method, enctype, name, multiple, required, value)
+import Html exposing (Html, button, p, text, input, form, div, span)
+import Html.Attributes exposing (attribute, class, style, type_, action, method, enctype, name, multiple, required, value)
 import Html.Events exposing (onClick)
 
 testBootstrapAlert : (String -> Html msg) -> Test
@@ -65,11 +65,23 @@ suite =
                             |> Expect.equal expected
             ]
         , describe "Upload.viewFileSelected"
-            [ skip <| test "Expected File Selected" <|
+            [ test "Expected File Selected" <|
                 \_ ->
                     let
                         content = "Hello World"
-                        expected = div [] [ text content ]
+                        expected =   div [ class "alert alert-success alert-dismissible fade show w-50" 
+                                    , attribute "role" "alert"
+                                    ]
+                                    [ text content
+                                    , button [type_ "button"
+                                            , class "btn close"
+                                            , attribute "data-dismiss" "alert"
+                                            , attribute "aria-label" "Close"
+                                            , onClick <| U.RemoveFile content
+                                            ]
+                                        [ span [attribute "aria-hidden" "true"] [ text "x" ]
+                                        ]
+                                    ]
                     in
                         U.viewFileSelected content
                             |> Expect.equal expected
@@ -96,6 +108,7 @@ suite =
                 testBootstrapAlert U.viewFileSelected
             ]
 
+{-
         , describe "Uplaod.viewFileUploading"
             [ todo "Write a test for the HTML while a file is uploading. "
             ]
@@ -105,6 +118,7 @@ suite =
         , describe "Upload.viewFileUploadFailed"
             [ todo "Write a test for the HTML if the upload fails. "
             ]
+-}
         , describe "Upload.viewForm"
             [ test "Expected Form" <|
                 \_ ->
@@ -132,18 +146,18 @@ suite =
                             |> Expect.equal expected
             ]
         , describe "Upload.view"
-            [ skip <| test "Expected Default" <|
+            [ test "Expected Default" <|
                 \_ -> 
                     let
-                        expected = div [] [ U.viewForm ]
+                        expected = div [] [ U.viewForm, div [class ""] [], U.viewUpload True ]
                         model = U.default
                     in 
                         U.view model
                             |> Expect.equal expected
-            , skip <| test "Expected Nothing" <|
+            , test "Expected Nothing" <|
                 \_ -> 
                     let
-                        expected = div [] [ U.viewForm ]
+                        expected = div [] [ U.viewForm, div [class ""] [], U.viewUpload True ]
                         model = U.Model [] Nothing
                     in 
                         U.view model
