@@ -5,6 +5,7 @@ node_js: '16.14.0' # latest 10.x
 script: 
   - pushd . && cd Web/Apache/Elm
   - cat elm.json
+  - npx elm-test --version
   - npx elm-test
   - popd && pushd . && cd Web/Node
   - npm install && npm run test
