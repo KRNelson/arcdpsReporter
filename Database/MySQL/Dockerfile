@@ -1,6 +1,5 @@
 FROM mysql:8-debian
 
-
 ENV MYSQL_ALLOW_EMPTY_PASSWORD=1
 
 ADD ./CREATE/SCHEMAS.sql ./docker-entrypoint-initdb.d/_01_SCHEMAS.sql

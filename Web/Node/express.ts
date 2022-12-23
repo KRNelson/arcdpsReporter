@@ -1,7 +1,9 @@
 // Import the express in typescript file
 import express from 'express';
  
-import { createPool , PoolConfig } from 'mysql';
+// import { createPool , PoolConfig } from 'mysql';
+// import { PoolConfig } from 'mysql';
+import { createPool , PoolOptions } from 'mysql2';
 import chokidar from 'chokidar';
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
@@ -9,6 +11,9 @@ import fs from 'fs-extra';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import _ from 'lodash';
+
+import { env } from 'node:process';
+import path from 'path';
 
 
 // Initialize the express engine
@@ -18,6 +23,9 @@ const app: express.Application = express();
 const port: number = 3000;
 
 var files : any = [];
+
+var user : any = '';
+var password : any = '';
 
 /**
  * Chokidar is used to watch for any new parsed log files. 
@@ -139,11 +147,18 @@ app.use(morgan('dev'));
 
 // Handling '/' Request
 app.get('/', (_req, _res) => {
-    _res.send("TypeScript With Express");
+    _res.send("TypeScript With Express?");
 });
+
+// Handling '/test' Request
+app.get('/test', (_req, _res) => {
+    _res.send("Successful test!");
+});
+
+
  
-const objConn : PoolConfig = {
-    host: 'arcdpsreporter_backend'
+const objConn : PoolOptions = {
+    host: 'backend'
     , port: 3306
     , user: 'root'
     , password: 'password'
@@ -358,8 +373,21 @@ app.post('/upload', async (req, res) => {
 
 // Server setup
 export const server = app.listen(port, () => {
+	const user_file : string = env['MYSQL_USER_FILE'] as string;
+	const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
+
+	const _user = path.resolve(user_file);
+	const _password = path.resolve(password_file);
+
+
+	const user = fs.readFileSync(_user, 'utf8');
+	const password = fs.readFileSync(_password, 'utf8');
+
+	console.log(`User: ${user}\nPassword: ${password}`);
+	/*
     console.log(`TypeScript with Express
-         http://localhost:${port}/`);
+         http://localhost:${port}/\n${env['MYSQL_ROOT_PASSWORD_FILE']}`);
+	*/
 });
 
 export default app

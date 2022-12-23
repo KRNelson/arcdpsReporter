@@ -79,7 +79,7 @@ mechanicDecoder =
 getMechanics : Cmd Msg
 getMechanics =
     Http.get
-        { url = "http://localhost:3000/mechanics"
+        { url = "/api/mechanics"
         , expect = Http.expectJson GotMechanics mechanicDecoder
         }
 
@@ -88,7 +88,7 @@ getMechanicsFromLogs logs =
   Http.request
     { method = "POST"
     , headers = []
-    , url = "http://localhost:3000/mechanics"
+    , url = "/api/mechanics"
     , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
     , expect = Http.expectJson GotMechanics mechanicDecoder
     , timeout = Nothing

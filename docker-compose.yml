@@ -1,46 +1,54 @@
 services:
   frontend:
     build: ./Web/Apache
-    networks:
-      - front-tier
-      - back-tier
     ports:
       - "8080:80"
-    # configs:
-    #   - httpd-config
-    # secrets:
-    #   - server-certificate
+    container_name: arcdpsreporter_frontend
+      # configs:
+      #   - httpd-config
+    secrets:
+      - server-certificate
 
   node:
     build: ./Web/Node
-    networks:
-      - back-tier
+      # networks:
+      #  - back-tier
     volumes:
       - reports:/etc/reports
       - logs:/etc/logs
-    ports:
-      - "3000:3000"
+        # ports:
+        #    - "3000:3000"
     container_name: arcdpsreporter_node
+    secrets:
+      - user
+      - password
+    environment:
+      - MYSQL_USER_FILE=/run/secrets/user
+      - MYSQL_PASSWORD_FILE=/run/secrets/password
 
   backend:
     build: ./Database/MySQL
     volumes:
       - db-data:/etc/data
       - reports:/etc/reports
-    networks:
-      - back-tier
-    environment:
-      MYSQL_ROOT_PASSWORD: ''
-      MYSQL_ROOT_USER: 'root'
-      MYSQL_PASS: ''
-      MYSQL_DATABASE: 'web'
     container_name: arcdpsreporter_backend
+    secrets:
+      - root
+      - user
+      - password
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root
+      - MYSQL_USER_FILE=/run/secrets/user
+      - MYSQL_PASSWORD_FILE=/run/secrets/password
+    command: --default-authentication-plugin=mysql_native_password
+
 
   parser:
     build: ./Parsers/Elite Insights Parsers
     volumes: 
       - reports:/etc/reports
       - logs:/etc/logs
+    container_name: arcdpsreporter_parser
 
 volumes:
   reports:
@@ -50,16 +58,25 @@ volumes:
   db-data:
     driver: local
 
-configs:
-  httpd-config:
-    external: true
+      # configs:
+      #   httpd-config:
+      #     external: true
 
 secrets:
   server-certificate:
     external: true
+  root:
+    file: root.txt
+    # external: true
+  user:
+    file: user.txt
+    # external: true
+  password:
+    file: password.txt
+    # external: true
 
-networks:
-  front-tier:
-    driver: bridge
-  back-tier: 
-    driver: bridge
+      # networks:
+      #   front-tier:
+      #     driver: bridge
+      #   back-tier: 
+      #     driver: bridge

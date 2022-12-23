@@ -67,7 +67,7 @@ playerDecoder =
 getPlayers : Cmd Msg
 getPlayers =
     Http.get
-        { url = "http://localhost:3000/players"
+        { url = "/api/players"
         , expect = Http.expectJson GotPlayers playerDecoder
         }
 
@@ -76,7 +76,7 @@ getPlayersFromLogs logs =
   Http.request
     { method = "POST"
     , headers = []
-    , url = "http://localhost:3000/players"
+    , url = "/api/players"
     , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
     , expect = Http.expectJson GotPlayers playerDecoder
     , timeout = Nothing

@@ -61,7 +61,7 @@ update msg model =
       , Http.request
         { method = "POST"
         , headers = []
-        , url = "http://localhost:3000/upload"
+        , url = "/api/upload"
         , body = Http.multipartBody ((List.map (\f -> Http.filePart "logs" f) model.files))
         , expect = Http.expectJson LogUploaded (Decode.field "message" Decode.string)
         , timeout = Nothing
