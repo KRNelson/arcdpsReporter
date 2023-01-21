@@ -13,7 +13,7 @@ inotifywait -m -e close_write --format "%f" $TARGET \
                         # Then, in another call immediately after, run the import into relational tables. 
                         # Make sure to import the filename as well as part of the import into relational tables. 
                         mysqlsh --mysqlx --user=$USER --password=$PASSWORD --host=backend --port=33060 --schema=rpt --import $TARGET/$FILENAME IRPTJSON LOG_JSON_TE
-                        rm $TARGET/$FILENAME
+                        # rm $TARGET/$FILENAME
 
                         # On NodeJS side, after moving the files. 
                         # Start polling for the existance of all the filenames in mysql. 

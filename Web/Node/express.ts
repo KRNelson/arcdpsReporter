@@ -46,8 +46,8 @@ const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
 const _user = path.resolve(user_file);
 const _password = path.resolve(password_file);
 
-const user = fs.readFileSync(_user, 'utf8');
-const password = fs.readFileSync(_password, 'utf8');
+const user = fs.readFileSync(_user, 'utf8').replace('\n', '')
+const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
  
 const objConn : PoolOptions = {
     host: 'backend'
