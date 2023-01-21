@@ -17,3 +17,5 @@ Web/Apache/Elm/elm.js
 
 *.txt
 *.tar
+.travis.yml
+.gitignore

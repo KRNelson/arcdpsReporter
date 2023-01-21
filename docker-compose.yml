@@ -6,8 +6,21 @@ services:
     container_name: arcdpsreporter_frontend
       # configs:
       #   - httpd-config
+    # secrets:
+    #   - server-certificate
+
+  mysqlsh:
+    build: ./Web/MySQL
+    volumes:
+      - reports:/etc/reports
+      # - logs:/etc/logs
+    container_name: arcdpsreporter_mysqlsh
     secrets:
-      - server-certificate
+      - user
+      - password
+    environment:
+      - MYSQL_USER_FILE=/run/secrets/user
+      - MYSQL_PASSWORD_FILE=/run/secrets/password
 
   node:
     build: ./Web/Node
@@ -16,8 +29,6 @@ services:
     volumes:
       - reports:/etc/reports
       - logs:/etc/logs
-        # ports:
-        #    - "3000:3000"
     container_name: arcdpsreporter_node
     secrets:
       - user
@@ -63,8 +74,8 @@ volumes:
       #     external: true
 
 secrets:
-  server-certificate:
-    external: true
+  # server-certificate:
+  #   external: true
   root:
     file: root.txt
     # external: true

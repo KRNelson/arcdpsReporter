@@ -47,7 +47,7 @@ init _ =
     model =
       default
   in
-    ( model, Cmd.none )
+    ( model, getPlayers )
 
 
 
@@ -67,7 +67,7 @@ playerDecoder =
 getPlayers : Cmd Msg
 getPlayers =
     Http.get
-        { url = "/api/players"
+        { url = "http://localhost:8080/api/players"
         , expect = Http.expectJson GotPlayers playerDecoder
         }
 
@@ -76,7 +76,7 @@ getPlayersFromLogs logs =
   Http.request
     { method = "POST"
     , headers = []
-    , url = "/api/players"
+    , url = "http://localhost:8080/api/players"
     , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
     , expect = Http.expectJson GotPlayers playerDecoder
     , timeout = Nothing

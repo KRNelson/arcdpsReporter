@@ -2,13 +2,27 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html, div, h1, text, button)
-import Html.Attributes exposing (placeholder, classList)
-import Html.Events exposing (onInput, onClick)
+import Html.Attributes exposing (classList)
+import Html.Events exposing (onClick, onMouseDown)
 
 import Logs exposing (..)
 import Upload exposing (..)
 import Players exposing (..)
 import Mechanics exposing (..)
+
+import DateRangePicker as Picker
+import DateRangePicker.Range as Range
+
+import Bootstrap.Alert as Alert
+import Bootstrap.Form as Form
+import Bootstrap.Button as Button
+import Bootstrap.CDN as CDN
+import Bootstrap.Spinner as Spinner
+import Bootstrap.Text as Text
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Tab as Tab
 
 main =
   -- Html.program
@@ -16,13 +30,14 @@ main =
     { init = init
     , update = update
     , view = view
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = subscriptions
     }
 
 -- MODEL
 type alias Model =
   { message : String
   , logs : Logs.Model
+  , tabState : Tab.State
   , upload : Upload.Model
   , players : Players.Model
   , mechanics : Mechanics.Model
@@ -34,18 +49,20 @@ init _ =
     model =
       { message = "Main!"
       , logs = Logs.default
+      , tabState = Tab.initialState
       , upload = Upload.default
       , players = Players.default
       , mechanics = Mechanics.default
       }
   in
-    ( model, Cmd.batch [Cmd.map LogMsg Logs.getLogs, Cmd.map MechanicsMsg Mechanics.getMechanics] )
+    ( model, Cmd.batch [Cmd.map LogMsg Logs.getLogs, Cmd.map LogMsg <| Picker.now Logs.PickerChanged model.logs.pickerState] )
 
 -- UPDATE
 type Msg
   = Default
   | LoadPlayersFromLogs
   | LoadMechanicsFromLogs
+  | TabMsg Tab.State
   | LogMsg Logs.Msg
   | UploadMsg Upload.Msg
   | PlayersMsg Players.Msg
@@ -57,9 +74,11 @@ update msg model =
     Default -> 
       ( model, Cmd.none )
     LoadPlayersFromLogs ->
-      ( model, Cmd.map PlayersMsg (Players.getPlayersFromLogs (List.filter .selected model.logs.logs)))
+      ( model, Cmd.map PlayersMsg <| Players.getPlayersFromLogs <| List.filter .selected model.logs.logs)
     LoadMechanicsFromLogs ->
-      ( model, Cmd.map MechanicsMsg (Mechanics.getMechanicsFromLogs (List.filter .selected model.logs.logs)))
+      ( model, Cmd.map MechanicsMsg <| Mechanics.getMechanicsFromLogs <|List.filter .selected model.logs.logs)
+    TabMsg tabState ->
+      ({model | tabState = tabState}, Cmd.none)
     LogMsg logmsg ->
       let
         (logmodel, logcmd) = Logs.update logmsg model.logs
@@ -69,7 +88,11 @@ update msg model =
       let
         (uploadmodel, uploadcmd) = Upload.update uploadmsg model.upload
       in
-        ({model | upload = uploadmodel}, Cmd.map UploadMsg uploadcmd)
+        case uploadmsg of
+            LogUploaded _ -> 
+              ({model | upload = uploadmodel}, Cmd.batch [Cmd.map UploadMsg uploadcmd, Cmd.map LogMsg getLogs])
+            _ ->
+              ({model | upload = uploadmodel}, Cmd.map UploadMsg uploadcmd)
     PlayersMsg playersmsg ->
       let
         (playersmodel, playerscmd) = Players.update playersmsg model.players
@@ -83,13 +106,43 @@ update msg model =
 
 -- VIEW
 view : Model -> Html Msg
-view { message , logs, upload, players, mechanics} =
-  div [classList [("test", True)] ]
-    [ h1 [] [ text message ]
-    , Html.map UploadMsg (Upload.view upload)
-    , Html.map LogMsg (Logs.view logs)
-    , button [ onClick LoadPlayersFromLogs ] [ text "Get players from selected logs" ]
-    , button [ onClick LoadMechanicsFromLogs ] [ text "Get mechanics from selected logs" ]
-    , Html.map PlayersMsg (Players.view players)
-    , Html.map MechanicsMsg (Mechanics.view mechanics)
-  ]
+view { message , tabState, logs, upload, players, mechanics} =
+  div []
+    [ CDN.stylesheet
+    , Grid.containerFluid []
+      [Grid.row [Row.topXs ]
+        [ Grid.col [Col.xs12 ]
+          [
+            Tab.config TabMsg
+              |> Tab.withAnimation
+              |> Tab.items
+                [ Tab.item
+                  { id = "logs"
+                  , link = Tab.link [] [ text "Logs" ]
+                  , pane = Tab.pane [] [ 
+                      Html.map LogMsg <| Logs.view logs
+                    ]
+                  }
+                , Tab.item
+                  { id = "upload"
+                  , link = Tab.link [] [ text "Upload" ]
+                  , pane = Tab.pane [] [ 
+                      Html.map UploadMsg <| Upload.view upload
+                    ]
+                  }
+                , Tab.item
+                  { id = "mechanics"
+                  , link = Tab.link [ onMouseDown LoadMechanicsFromLogs ] [ text "Mechanics" ]
+                  , pane = Tab.pane [] [ 
+                      Html.map MechanicsMsg <| Mechanics.view mechanics
+                    ]
+                  }
+                ]
+              |> Tab.view tabState
+          ]
+        ]
+      ]
+    ]
+
+subscriptions : Model -> Sub Msg
+subscriptions model = Sub.batch [Sub.map LogMsg <| Logs.subscriptions model.logs, Sub.map UploadMsg <| Upload.subscriptions model.upload, Tab.subscriptions model.tabState TabMsg]

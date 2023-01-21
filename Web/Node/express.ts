@@ -1,8 +1,6 @@
 // Import the express in typescript file
 import express from 'express';
  
-// import { createPool , PoolConfig } from 'mysql';
-// import { PoolConfig } from 'mysql';
 import { createPool , PoolOptions } from 'mysql2';
 import chokidar from 'chokidar';
 import fileUpload from 'express-fileupload';
@@ -21,119 +19,6 @@ const app: express.Application = express();
 
 // Take a port 3000 for running server.
 const port: number = 3000;
-
-var files : any = [];
-
-var user : any = '';
-var password : any = '';
-
-/**
- * Chokidar is used to watch for any new parsed log files. 
- * Waits 10 seconds before actually attempting to upload.
- *      Since after the 1st add there are additional 'change' events
- * 
- * "Side effect": If the same file is uploaded it will be skipped over. 
- * 
- * VI-15-TODO: Needs a better method than waiting 10 seconds...
- */
-var paths : Record<string, NodeJS.Timeout>= {};
-const delay: number = 2000;
-chokidar.watch('/etc/reports/*.json').on('all', (eventName : string, path : string) => {
-
-    const fileLoaded = () => {
-        fs.readJson(path)
-        .then(log => {
-            const players = log.players.map((player : any) => {
-                return { instanceID : player.instanceID
-                        , account : player.account.replace("'", "") // Remove '
-                        , name : player.name.replace("'", "") // Remove '
-                        , profession : player.profession
-                        , hasCommanderTag : player.hasCommanderTag
-                        , group : player.group
-                        , condition : player.condition
-                        , concentration : player.concentration
-                        , healing : player.healing
-                        , toughness : player.toughness
-                        }
-                });
-
-            /*
-            const rotations = log.players.map((player : any) => {
-                return player.rotation.map((rotation : any) => {
-                    return rotation.skills.map((skill : any) => {
-                        return { account : player.account.replace("'", "")
-                               , id : rotation.id
-                               , name : log.skillMap["s" + rotation.id].name.replace("'", "")
-                               , castTime : skill.castTime
-                               , duration : skill.duration
-                               , timeGained : skill.timeGained
-                               , quickness : skill.quickness
-                               }
-                    });
-                });
-            }).flat(Infinity);
-            */
-
-            const mechanics = log.mechanics.map((mechanic : any) => {
-                return { name : mechanic.name.replace("'", "")
-                       , description : mechanic.description.replace("'", "")
-                       , mechanicsData : mechanic.mechanicsData.map((mechanicsData : any) => {
-                            return { time : mechanicsData.time
-                                   , actor : mechanicsData.actor.replace("'", "")
-                                   }
-                       })
-                       }
-            });
-
-            const data = {
-                isCM: log.isCM
-                , success: log.success
-                , eliteInsightsVersion: log.eliteInsightsVersion
-                , triggerID: log.triggerID
-                , fightName: log.fightName
-                , arcVersion: log.arcVersion
-                , gw2Build: log.gw2Build
-                , language: log.language
-                , languageID: log.languageID
-                , recordedBy: log.recordedBy
-                , timeStartStd: log.timeStartStd
-                , timeEndStd: log.timeEndStd
-                , duration: log.duration
-
-                , players: players 
-                , mechanics: mechanics 
-                // , rotations : rotations
-                , file : path
-            };
-            myquery(`CALL web.importJSON('${JSON.stringify(data)}');`
-                , (result : any) => {
-                    // Used to communicated between the web log upload and server parsing/uploading. 
-                    files = files.filter((file : any) => {
-                        const fileName = (file.name).split('.')[0]; 
-                        const pathName = ((path.split('/')[3]).split('.')[0]).split('_')[0]; 
-                        return fileName!=pathName;
-                    });
-                })
-                ;
-        })
-        .catch(err => {
-            console.error(err)
-        });
-
-        console.log('timeout', path)
-        delete paths[path];
-    };
-
-    switch(eventName) {
-        case 'add': paths[path] = setTimeout(fileLoaded, delay);
-                    console.log('add', path)
-                    break;
-        case 'change': 
-                    paths[path].refresh();
-                    console.log('change', path)
-                    break;
-    }
-});
 
 // Setup
 app.use(fileUpload({
@@ -155,23 +40,30 @@ app.get('/test', (_req, _res) => {
     _res.send("Successful test!");
 });
 
+const user_file : string = env['MYSQL_USER_FILE'] as string;
+const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
 
+const _user = path.resolve(user_file);
+const _password = path.resolve(password_file);
+
+const user = fs.readFileSync(_user, 'utf8');
+const password = fs.readFileSync(_password, 'utf8');
  
 const objConn : PoolOptions = {
     host: 'backend'
     , port: 3306
-    , user: 'root'
-    , password: 'password'
+    , user: user
+    , password: password
     , database: 'web'
     , insecureAuth: true
     , connectionLimit: 5
 };
 
 //create mysql connection pool
-var dbconnection = createPool(objConn);
+var dbconnection : any = createPool(objConn);
 
 // Attempt to catch disconnects 
-dbconnection.on('connection', function (connection) {
+dbconnection.on('connection', function (connection : any) {
   console.log('DB Connection established');
 
   connection.on('error', function (err : any) {
@@ -182,14 +74,14 @@ dbconnection.on('connection', function (connection) {
   });
 });
 
-const dbquery = (query : any, result_callback : any, query_error_callback : any, connection_error_callback : any, db : any, connect_error_callback : any) => {
+const dbquery = (query : any, prepared : any, result_callback : any, query_error_callback : any, connection_error_callback : any, db : any, connect_error_callback : any) => {
     db.getConnection(function(error : any, connection : any) {
         if(error) {
             connect_error_callback(error);
             return;
         }
 
-        connection.query(query, (error : any, results : any) => {
+        connection.execute(query, prepared, (error : any, results : any) => {
             connection.release();
             if(error) {
                 query_error_callback(error);
@@ -205,11 +97,11 @@ const dbquery = (query : any, result_callback : any, query_error_callback : any,
     })
 };
 
-const myquery = (query : any, result_callback : any) => {
+const myquery = (query : any, prepared : any, result_callback : any) => {
     const query_error_callback = (error : any) => {console.log(error)};
     const connection_error_callback = (error : any) => {console.log(error)};
     const connect_error_callback = (error : any) => {console.log(error)};
-    dbquery(query, result_callback, query_error_callback, connection_error_callback, dbconnection, connect_error_callback);
+    dbquery(query, prepared, result_callback, query_error_callback, connection_error_callback, dbconnection, connect_error_callback);
 };
 
 type Player = {
@@ -221,7 +113,7 @@ const _player = (player : any) : Player => {
 }
 
 app.get('/players', (req, res) => {
-    myquery(`CALL web.getAllPlayers()`
+    myquery(`CALL web.getAllPlayers()`, []
         , (result : any) => {
             const rows = result[0];
             res.send({
@@ -231,10 +123,9 @@ app.get('/players', (req, res) => {
         });
 });
 
-
 app.post('/players', (req, res) => {
     const logs = {logs: (((r) => {return (Array.isArray(r)?r:[r])})(req.body.id || [])).map((id : string) => {return {id: id}})};
-    myquery(`CALL web.postPlayers('${JSON.stringify(logs)}')`
+    myquery(`CALL web.postPlayers(?)`, [JSON.stringify(logs)]
         , (result : any) => {
             const rows = result[0];
             res.send({
@@ -245,26 +136,34 @@ app.post('/players', (req, res) => {
 });
 
 type Mechanics = {
-    account : string
+    identifier : string
+    , fight : string
+    , fight_icon : string
+    , start : string 
+    , account : string
     , character : string
     , profession : string
-    , mechanics : string
+    , mechanic : string
+    , description : string
     , total : number
-    , descriptive : string
 };
 
 const _mechanics = (mechanics : any) : Mechanics => {
-    return { account : mechanics.LOG_ACC_NA
+    return { identifier : mechanics.LOG_SYS_NR
+           , fight : mechanics.LOG_FGT_NA
+           , fight_icon : mechanics.LOG_FGT_IC
+           , start : mechanics.LOG_STR_DT
+           , account : mechanics.LOG_ACC_NA
            , character : mechanics.LOG_CHR_NA
            , profession : mechanics.LOG_PRO_NA
-           , mechanics : mechanics.LOG_MCH_TE
-           , total : mechanics.TOT_NR
-           , descriptive : mechanics.TOT_DSC_TE
+           , mechanic : mechanics.LOG_MCH_NA
+           , description : mechanics.LOG_DSC_TE
+           , total : Number(mechanics.TOT_NR)
         }
 }
 
 app.get('/mechanics', (req, res) => {
-    myquery(`CALL web.getMechanics()`
+    myquery(`CALL web.getMechanics()`, []
         , (result : any) => {
             const rows = result[0];
             res.send({
@@ -276,7 +175,7 @@ app.get('/mechanics', (req, res) => {
 
 app.post('/mechanics', (req, res) => {
     const logs = {logs: (((r) => {return (Array.isArray(r)?r:[r])})(req.body.id || [])).map((id : string) => {return {id: id}})};
-    myquery(`CALL web.postMechanics('${JSON.stringify(logs)}')`
+    myquery(`CALL web.postMechanics(?)`, [JSON.stringify(logs)]
         , (result : any) => {
             const rows = result[0];
             res.send({
@@ -288,11 +187,11 @@ app.post('/mechanics', (req, res) => {
 
 type Log = {
     identifier : string
-    , is_cm : boolean
-    , is_win : boolean
     , elite_version : string
     , trigger_id : number 
+    , ei_encounter_id : number
     , fight : string
+    , fight_icon : string
     , arc_version : string
     , gw2_version : string
     , language : string
@@ -301,29 +200,36 @@ type Log = {
     , start : string // datetime type?
     , end : string // datetime type?
     , duration : string
-
+    , duration_ms : number
+    , log_start_offset : number
+    , is_win : boolean
+    , is_cm : boolean
 };
 
 const _log = (log : any) : Log => {
     return { identifier : log.LOG_SYS_NR
-           , is_cm : (log.LOG_CM_IR==1)?true:false
-           , is_win : (log.LOG_SUC_IR==1)?true:false
            , elite_version : log.LOG_ELI_VER
-           , trigger_id : log.LOG_TRG_ID
+           , trigger_id : Number(log.LOG_TRG_ID)
+           , ei_encounter_id : Number(log.LOG_EI_ID)
            , fight : log.LOG_FGT_NA
+           , fight_icon : log.LOG_FGT_IC
            , arc_version : log.LOG_ARC_VER
            , gw2_version : log.LOG_GW_VER
            , language : log.LOG_LANG_TE
-           , language_nr : log.LOG_LANG_NR
+           , language_nr : Number(log.LOG_LANG_NR)
            , recorded_by : log.LOG_REC_TE
            , start : log.LOG_STR_DT
            , end : log.LOG_END_DT
            , duration : log.LOG_DUR_DT
+           , duration_ms : Number(log.LOG_DUR_MS)
+           , log_start_offset : Number(log.LOG_STR_OFF)
+           , is_win : (log.LOG_SUC_IR==1)?true:false
+           , is_cm : (log.LOG_CM_IR==1)?true:false
         }
 }
 
 app.get('/logs', (req, res) => {
-    myquery(`CALL web.getLogs()`
+    myquery(`CALL web.getLogs()`, []
         , (result : any) => {
             const rows = result[0];
             res.send({
@@ -335,34 +241,45 @@ app.get('/logs', (req, res) => {
 
 app.post('/upload', async (req, res) => {
     try {
-        console.log("/upload!", req.files)
         if(!req.files) {
             res.send({
                 status: false
                 , message: 'No file uploaded'
             });
         } else {
-            var logs = req.files.logs;
+            var logs : Array<fileUpload.UploadedFile> = [];
 
-            files = files.concat(logs);
-
-            if(!Array.isArray(logs)) {
-                logs = [logs];
+            if(!Array.isArray(req.files.logs)) {
+                logs = [req.files.logs];
+            } else {
+                logs = req.files.logs
             }
+
+            // Moves the uploaded log files into a watched folder by the Parser
+            // The Parser then parses those logs, and that .json output to sent
+            // to another watched folder to be uploaded to MySQL. 
             logs.forEach((log) => {
                 log.mv('/etc/logs/' + log.name);
             });
 
-            const thsInterval = setInterval(() => {
-                if(files.length==0) {
-                    res.send({
-                        status: true
-                        , message: 'Files are uploaded'
-                    });
+            var arrLogs : Array<string> = logs.map((log) => log.name.split('.')[0])
 
-                    clearInterval(thsInterval);
+            const strDirectory : string = '/etc/reports/'
+            const watcher = chokidar.watch(strDirectory);
+            watcher.on('add', (path : string) => {
+                arrLogs = arrLogs.filter((log) => strDirectory+log !== path.split('_')[0])
+                if(arrLogs.length===0) {
+                    watcher.close().then(() => {
+                        setTimeout(() => {
+                            res.send({
+                                status: true
+                                , message: 'Files are uploaded'
+                            });
+                        }, 1000)
+                        return;
+                    })
                 }
-            }, 5000);
+            });
         }
     } catch(error) {
         console.log("Error!", error);
@@ -373,21 +290,6 @@ app.post('/upload', async (req, res) => {
 
 // Server setup
 export const server = app.listen(port, () => {
-	const user_file : string = env['MYSQL_USER_FILE'] as string;
-	const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
-
-	const _user = path.resolve(user_file);
-	const _password = path.resolve(password_file);
-
-
-	const user = fs.readFileSync(_user, 'utf8');
-	const password = fs.readFileSync(_password, 'utf8');
-
-	console.log(`User: ${user}\nPassword: ${password}`);
-	/*
-    console.log(`TypeScript with Express
-         http://localhost:${port}/\n${env['MYSQL_ROOT_PASSWORD_FILE']}`);
-	*/
 });
 
 export default app

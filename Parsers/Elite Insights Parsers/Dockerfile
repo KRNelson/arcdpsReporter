@@ -21,7 +21,8 @@ RUN chmod +777 /etc/logs
 
 ADD report.conf .
 ADD process.sh .
+RUN sed -i 's/\r$//' process.sh
 RUN chmod +777 process.sh
 
 ENTRYPOINT ["/usr/bin/entrypoint"]
-CMD ["./process.sh"]
+CMD ["/bin/bash", "process.sh"]
