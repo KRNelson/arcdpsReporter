@@ -167,7 +167,7 @@ logDecoder =
 getLogs : Cmd Msg
 getLogs =
     Http.get
-        { url = "http://localhost:8080/api/logs"
+        { url = "/api/logs"
         , expect = Http.expectJson GotLogs logsDecoder
         }
 

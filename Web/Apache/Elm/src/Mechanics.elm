@@ -116,7 +116,7 @@ decodeTime =
 getMechanics : Cmd Msg
 getMechanics =
     Http.get
-        { url = "http://localhost:8080/api/mechanics"
+        { url = "/api/mechanics"
         , expect = Http.expectJson GotMechanics mechanicsDecoder
         }
 
@@ -125,7 +125,7 @@ getMechanicsFromLogs logs =
   Http.request
     { method = "POST"
     , headers = []
-    , url = "http://localhost:8080/api/mechanics"
+    , url = "/api/mechanics"
     , body = Http.multipartBody (List.map (\log -> (Http.stringPart "id") log.identifier) logs)
     , expect = Http.expectJson GotMechanics mechanicsDecoder
     , timeout = Nothing
