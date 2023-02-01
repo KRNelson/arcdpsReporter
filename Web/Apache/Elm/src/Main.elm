@@ -7,7 +7,7 @@ import Html.Events exposing (onClick, onMouseDown)
 
 import Logs exposing (..)
 import Upload exposing (..)
-import Players exposing (..)
+import Rotations exposing (..)
 import Mechanics exposing (..)
 
 import DateRangePicker as Picker
@@ -39,7 +39,7 @@ type alias Model =
   , logs : Logs.Model
   , tabState : Tab.State
   , upload : Upload.Model
-  , players : Players.Model
+  -- , players : Players.Model
   , mechanics : Mechanics.Model
   }
 
@@ -51,7 +51,7 @@ init _ =
       , logs = Logs.default
       , tabState = Tab.initialState
       , upload = Upload.default
-      , players = Players.default
+      -- , players = Rotations.default
       , mechanics = Mechanics.default
       }
   in
@@ -60,12 +60,12 @@ init _ =
 -- UPDATE
 type Msg
   = Default
-  | LoadPlayersFromLogs
+  -- | LoadPlayersFromLogs
   | LoadMechanicsFromLogs
   | TabMsg Tab.State
   | LogMsg Logs.Msg
   | UploadMsg Upload.Msg
-  | PlayersMsg Players.Msg
+  -- | PlayersMsg Players.Msg
   | MechanicsMsg Mechanics.Msg
   
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -73,8 +73,8 @@ update msg model =
   case msg of
     Default -> 
       ( model, Cmd.none )
-    LoadPlayersFromLogs ->
-      ( model, Cmd.map PlayersMsg <| Players.getPlayersFromLogs <| List.filter .selected model.logs.logs)
+    -- LoadPlayersFromLogs ->
+    --   ( model, Cmd.map RotationsMsg <| Rotations.getPlayersFromLogs <| List.filter .selected model.logs.logs)
     LoadMechanicsFromLogs ->
       ( model, Cmd.map MechanicsMsg <| Mechanics.getMechanicsFromLogs <|List.filter .selected model.logs.logs)
     TabMsg tabState ->
@@ -93,11 +93,11 @@ update msg model =
               ({model | upload = uploadmodel}, Cmd.batch [Cmd.map UploadMsg uploadcmd, Cmd.map LogMsg getLogs])
             _ ->
               ({model | upload = uploadmodel}, Cmd.map UploadMsg uploadcmd)
-    PlayersMsg playersmsg ->
-      let
-        (playersmodel, playerscmd) = Players.update playersmsg model.players
-      in
-        ({model | players = playersmodel}, Cmd.map PlayersMsg playerscmd)
+    -- PlayersMsg playersmsg ->
+    --   let
+    --     (playersmodel, playerscmd) = Rotations.update playersmsg model.players
+    --   in
+    --     ({model | players = playersmodel}, Cmd.map RotationsMsg playerscmd)
     MechanicsMsg mechanicsmsg ->
       let
         (mechanicsmodel, mechanicscmd) = Mechanics.update mechanicsmsg model.mechanics
@@ -106,7 +106,7 @@ update msg model =
 
 -- VIEW
 view : Model -> Html Msg
-view { message , tabState, logs, upload, players, mechanics} =
+view { message , tabState, logs, upload, mechanics} =
   div []
     [ CDN.stylesheet
     , Grid.containerFluid []

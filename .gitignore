@@ -19,3 +19,4 @@ Web/Apache/Elm/elm.js
 *.tar
 .travis.yml
 .gitignore
+rotations.json

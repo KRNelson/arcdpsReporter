@@ -50,7 +50,7 @@ const user = fs.readFileSync(_user, 'utf8').replace('\n', '')
 const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
  
 const objConn : PoolOptions = {
-    host: 'backend'
+    host: 'localhost'
     , port: 3306
     , user: user
     , password: password
@@ -181,6 +181,56 @@ app.post('/mechanics', (req, res) => {
             res.send({
                 status: true
                 , data: rows.map((row : any) => _mechanics(row))
+            })
+        });
+});
+
+type Rotations = {
+    identifier : string
+    , fight : string
+    , fight_icon : string
+    , start : string 
+    , account : string
+    , character : string
+    , profession : string
+    , skill_id : string
+    , cast : number
+    , duration : number
+};
+
+const _rotations = (rotations : any) : Rotations => {
+    return { identifier : rotations.LOG_SYS_NR
+           , fight : rotations.LOG_FGT_NA
+           , fight_icon : rotations.LOG_FGT_IC
+           , start : rotations.LOG_STR_DT
+           , account : rotations.LOG_ACC_NA
+           , character : rotations.LOG_CHR_NA
+           , profession : rotations.LOG_PRO_NA
+           , skill_id : rotations.LOG_SKL_ID
+           , cast : Number(rotations.LOG_CST_NR)
+           , duration : Number(rotations.LOG_DUR_NR)
+        }
+}
+
+app.get('/rotations', (req, res) => {
+    myquery(`CALL web.getRotations()`, []
+        , (result : any) => {
+            const rows = result[0];
+            res.send({
+                status: true
+                , data: rows.map((row : any) => _rotations(row))
+            })
+        });
+});
+
+app.post('/rotations', (req, res) => {
+    const logs = {logs: (((r) => {return (Array.isArray(r)?r:[r])})(req.body.id || [])).map((id : string) => {return {id: id}})};
+    myquery(`CALL web.postRotations(?)`, [JSON.stringify(logs)]
+        , (result : any) => {
+            const rows = result[0];
+            res.send({
+                status: true
+                , data: rows.map((row : any) => _rotations(row))
             })
         });
 });

@@ -23,4 +23,4 @@ ADD process.sh .
 RUN sed -i 's/\r$//' process.sh
 RUN chmod +777 process.sh
 
-CMD ["/bin/bash", "process.sh"]
+ENTRYPOINT ["/bin/bash", "process.sh"]

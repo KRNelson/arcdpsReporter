@@ -343,6 +343,7 @@ playerStatsTable mechanics =
               Nothing -> 0
               Just stat -> List.sum (List.map (\{total} -> total) (Dict.values stat.mechanicStats))
         )
+      -- TODO: (1/21/2023) Change this from intColumn to customColumn that display's mechanic description onHover. 
       :: (List.map (\mechanic_name -> Table.intColumn mechanic_name 
         (\data -> 
           case (Dict.get data.account mechanics.player_stats) of

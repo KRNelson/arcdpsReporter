@@ -1,6 +1,6 @@
 FROM httpd:bullseye
 
-ENV NODE_HOST=node
+ENV NODE_HOST=localhost
 ENV NODE_PORT=3000
 
 # RUN apt-get install npm

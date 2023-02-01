@@ -12,7 +12,7 @@ inotifywait -m -e close_write --format "%f" $TARGET \
                         # Maybe... Instead of having a target, just let mysqlsh --import create the target table.
                         # Then, in another call immediately after, run the import into relational tables. 
                         # Make sure to import the filename as well as part of the import into relational tables. 
-                        mysqlsh --mysqlx --user=$USER --password=$PASSWORD --host=backend --port=33060 --schema=rpt --import $TARGET/$FILENAME IRPTJSON LOG_JSON_TE
+                        mysqlsh --mysqlx --user=$USER --password=$PASSWORD --host=localhost --port=33060 --schema=rpt --import $TARGET/$FILENAME IRPTJSON LOG_JSON_TE
                         # rm $TARGET/$FILENAME
 
                         # On NodeJS side, after moving the files. 
