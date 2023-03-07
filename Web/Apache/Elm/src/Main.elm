@@ -39,7 +39,7 @@ type alias Model =
   , logs : Logs.Model
   , tabState : Tab.State
   , upload : Upload.Model
-  -- , players : Players.Model
+  , rotations : Rotations.Model
   , mechanics : Mechanics.Model
   }
 
@@ -51,7 +51,7 @@ init _ =
       , logs = Logs.default
       , tabState = Tab.initialState
       , upload = Upload.default
-      -- , players = Rotations.default
+      , rotations = Rotations.default
       , mechanics = Mechanics.default
       }
   in
@@ -61,11 +61,13 @@ init _ =
 type Msg
   = Default
   -- | LoadPlayersFromLogs
+  | LoadRotationsFromLogs
   | LoadMechanicsFromLogs
   | TabMsg Tab.State
   | LogMsg Logs.Msg
   | UploadMsg Upload.Msg
   -- | PlayersMsg Players.Msg
+  | RotationsMsg Rotations.Msg
   | MechanicsMsg Mechanics.Msg
   
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,6 +77,8 @@ update msg model =
       ( model, Cmd.none )
     -- LoadPlayersFromLogs ->
     --   ( model, Cmd.map RotationsMsg <| Rotations.getPlayersFromLogs <| List.filter .selected model.logs.logs)
+    LoadRotationsFromLogs ->
+      ( model, Cmd.map RotationsMsg <| Rotations.getRotationsFromLogs <|List.filter .selected model.logs.logs)
     LoadMechanicsFromLogs ->
       ( model, Cmd.map MechanicsMsg <| Mechanics.getMechanicsFromLogs <|List.filter .selected model.logs.logs)
     TabMsg tabState ->
@@ -98,15 +102,21 @@ update msg model =
     --     (playersmodel, playerscmd) = Rotations.update playersmsg model.players
     --   in
     --     ({model | players = playersmodel}, Cmd.map RotationsMsg playerscmd)
+    RotationsMsg rotationsmsg ->
+      let
+        (rotationsmodel, rotationscmd) = Rotations.update rotationsmsg model.rotations
+      in
+        ({model | rotations = rotationsmodel}, Cmd.map RotationsMsg rotationscmd)
     MechanicsMsg mechanicsmsg ->
       let
         (mechanicsmodel, mechanicscmd) = Mechanics.update mechanicsmsg model.mechanics
       in
         ({model | mechanics = mechanicsmodel}, Cmd.map MechanicsMsg mechanicscmd)
 
+
 -- VIEW
 view : Model -> Html Msg
-view { message , tabState, logs, upload, mechanics} =
+view { message , tabState, logs, upload, rotations, mechanics} =
   div []
     [ CDN.stylesheet
     , Grid.containerFluid []
@@ -131,6 +141,13 @@ view { message , tabState, logs, upload, mechanics} =
                     ]
                   }
                 , Tab.item
+                  { id = "rotations"
+                  , link = Tab.link [ onMouseDown LoadRotationsFromLogs ] [ text "Rotations" ]
+                  , pane = Tab.pane [] [ 
+                      Html.map RotationsMsg <| Rotations.view rotations
+                    ]
+                  }
+                , Tab.item
                   { id = "mechanics"
                   , link = Tab.link [ onMouseDown LoadMechanicsFromLogs ] [ text "Mechanics" ]
                   , pane = Tab.pane [] [ 
@@ -145,4 +162,4 @@ view { message , tabState, logs, upload, mechanics} =
     ]
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.batch [Sub.map LogMsg <| Logs.subscriptions model.logs, Sub.map UploadMsg <| Upload.subscriptions model.upload, Tab.subscriptions model.tabState TabMsg]
+subscriptions model = Sub.batch [Sub.map LogMsg <| Logs.subscriptions model.logs, Sub.map UploadMsg <| Upload.subscriptions model.upload, Sub.map RotationsMsg <| Rotations.subscriptions model.rotations, Tab.subscriptions model.tabState TabMsg]

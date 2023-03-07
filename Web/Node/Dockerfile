@@ -16,6 +16,11 @@ COPY package.json ./
 RUN npm install package.json
 RUN npm install -g typescript@latest
 
+COPY test.js .
+
+COPY server.crt server.crt
+COPY server.key server.key
+
 COPY express.ts .
 COPY tsconfig.json .
 RUN tsc --project tsconfig.json
@@ -23,6 +28,6 @@ RUN tsc --project tsconfig.json
 # If you are building your code for production
 # RUN npm ci --only=production
 
-EXPOSE 3000
+EXPOSE 3443
 
 CMD ["node", "./build/express.js"]

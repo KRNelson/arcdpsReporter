@@ -30,7 +30,7 @@ main =
     { init = init
     , update = update
     , view = view
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = subscriptions
     }
 
 -- MODEL
@@ -419,3 +419,6 @@ viewChart =
         [ C.tooltip item [ CA.center, CA.offset 0, CA.onTopOrBottom ] [] [] ]
     ]
   ]
+
+subscriptions : Model -> Sub Msg
+subscriptions _ = Sub.none

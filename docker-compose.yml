@@ -1,19 +1,18 @@
 services:
   frontend:
     build: ./Web/Apache
+    volumes:
+      # - reports:/etc/reports
+      - logs:/etc/logs
     ports:
       - "8080:80"
     container_name: arcdpsreporter_frontend
-      # configs:
-      #   - httpd-config
-    # secrets:
-    #   - server-certificate
 
   mysqlsh:
     build: ./Web/MySQL
     volumes:
-      - reports:/etc/reports
-      # - logs:/etc/logs
+      # - reports:/etc/reports
+      - logs:/etc/logs
     container_name: arcdpsreporter_mysqlsh
     secrets:
       - user
@@ -21,13 +20,10 @@ services:
     environment:
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
-
   node:
     build: ./Web/Node
-      # networks:
-      #  - back-tier
     volumes:
-      - reports:/etc/reports
+      # - reports:/etc/reports
       - logs:/etc/logs
     container_name: arcdpsreporter_node
     secrets:
@@ -36,7 +32,6 @@ services:
     environment:
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
-
   backend:
     build: ./Database/MySQL
     volumes:
@@ -52,15 +47,12 @@ services:
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
     command: --default-authentication-plugin=mysql_native_password
-
-
   parser:
     build: ./Parsers/Elite Insights Parsers
     volumes: 
       - reports:/etc/reports
       - logs:/etc/logs
     container_name: arcdpsreporter_parser
-
 volumes:
   reports:
     driver: local
@@ -68,26 +60,10 @@ volumes:
     driver: local
   db-data:
     driver: local
-
-      # configs:
-      #   httpd-config:
-      #     external: true
-
 secrets:
-  # server-certificate:
-  #   external: true
   root:
     file: root.txt
-    # external: true
   user:
     file: user.txt
-    # external: true
   password:
     file: password.txt
-    # external: true
-
-      # networks:
-      #   front-tier:
-      #     driver: bridge
-      #   back-tier: 
-      #     driver: bridge
