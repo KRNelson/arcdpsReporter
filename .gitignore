@@ -20,3 +20,16 @@ Web/Apache/Elm/elm.js
 .travis.yml
 .gitignore
 rotations.json
+Web/Apache/server.crt
+.gitignore
+.gitignore
+Web/Node/server.key
+Web/Node/server.crt
+Web/Apache/server.key
+Database/MySQL/mysql-apt-config_0.8.24-1_all.deb
+Database/MySQL/mysql-shell_8.0.32-1debian11_amd64.deb
+Parsers/Elite Insights Parsers/GW2EI.zip
+Parsers/Elite Insights Parsers/report.conf.bk
+Parsers/Elite Insights Parsers/report2.conf
+Web/Apache/httpd-ssl.conf.bk
+Web/Apache/httpd.conf.bk
