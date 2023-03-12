@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                sh 'sudo chown -R 130:137 "/.npm"'
                 sh 'npm install -g elm@0.19.1'
                 sh 'npm install -g uglify-js'
                 sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js && uglifyjs --output main.min.js --compress --mangle -- main.js'
