@@ -1,8 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'ubuntu'
-            args '-p 8081:8081'
+            image 'debian'
         }
     }
     environment {
@@ -11,8 +10,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'sudo apt-get update'
-                sh 'sudo apt-get install -y npm --no-install-recommends'
+                sh 'apt-get update'
+                sh 'apt-get install -y npm --no-install-recommends'
                 sh 'npm install elm@0.19.1'
                 sh 'npm install uglify-js'
                 sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js && uglifyjs --output main.min.js --compress --mangle -- main.js'
