@@ -9,14 +9,9 @@ ENV MYSQL_PASSWORD_FILE=/run/secrets/password
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
-RUN mkdir /etc/logs
-RUN chmod +777 /etc/logs
-
 COPY package.json ./
 RUN npm install package.json
 RUN npm install -g typescript@latest
-
-COPY test.js .
 
 COPY server.crt server.crt
 COPY server.key server.key
