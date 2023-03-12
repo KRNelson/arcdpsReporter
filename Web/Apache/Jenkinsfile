@@ -11,8 +11,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // sh 'npm install package.json'
-                sh 'ls -la'
+                sh 'cd ./Web/Apache/Elm && npm install package.json'
             }
         }
     }
