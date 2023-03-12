@@ -1,21 +1,13 @@
 pipeline {
     agent {
         docker {
-            image 'debian'
+            image 'node:16.17.1-apline'
         }
-    }
-    environment {
-        CI = 'true'
     }
     stages {
         stage('Build') {
             steps {
-                sh 'apt-get update'
-                sh 'apt-get install -y npm --no-install-recommends'
-                sh 'npm install elm@0.19.1'
-                sh 'npm install uglify-js'
-                sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js && uglifyjs --output main.min.js --compress --mangle -- main.js'
-                sh 'ls -la'
+                sh 'node --version'
             }
         }
     }
