@@ -1,4 +1,4 @@
-module Upload exposing (..)
+module Upload exposing (Model, default, Msg(..), update, view, subscriptions)
 
 import Browser
 
@@ -11,9 +11,8 @@ import Bootstrap.CDN as CDN
 import Bootstrap.Spinner as Spinner
 import Bootstrap.Text as Text
 
-import Html exposing (Html, button, div, text, form, input, iframe, p, span)
-import Html.Attributes exposing (attribute, class, style, type_, value, hidden, disabled)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, text, p)
+import Html.Attributes exposing (class, disabled)
 
 -- import Task
 import Json.Decode as Decode

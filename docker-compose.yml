@@ -1,31 +1,16 @@
 services:
   frontend:
     build: ./Web/Apache
+    container_name: arcdpsreporter_frontend
     volumes:
-      # - reports:/etc/reports
       - logs:/etc/logs
     ports:
       - "8080:80"
-    container_name: arcdpsreporter_frontend
-
-  mysqlsh:
-    build: ./Web/MySQL
-    volumes:
-      # - reports:/etc/reports
-      - logs:/etc/logs
-    container_name: arcdpsreporter_mysqlsh
-    secrets:
-      - user
-      - password
-    environment:
-      - MYSQL_USER_FILE=/run/secrets/user
-      - MYSQL_PASSWORD_FILE=/run/secrets/password
   node:
     build: ./Web/Node
-    volumes:
-      # - reports:/etc/reports
-      - logs:/etc/logs
     container_name: arcdpsreporter_node
+    volumes:
+      - logs:/etc/logs
     secrets:
       - user
       - password
@@ -34,10 +19,10 @@ services:
       - MYSQL_PASSWORD_FILE=/run/secrets/password
   backend:
     build: ./Database/MySQL
+    container_name: arcdpsreporter_backend
     volumes:
       - db-data:/etc/data
-      - reports:/etc/reports
-    container_name: arcdpsreporter_backend
+      - logs:/etc/logs
     secrets:
       - root
       - user
@@ -48,14 +33,11 @@ services:
       - MYSQL_PASSWORD_FILE=/run/secrets/password
     command: --default-authentication-plugin=mysql_native_password
   parser:
-    build: ./Parsers/Elite Insights Parsers
-    volumes: 
-      - reports:/etc/reports
-      - logs:/etc/logs
+    build: './Parsers/Elite Insights Parsers'
     container_name: arcdpsreporter_parser
+    volumes: 
+      - logs:/etc/logs
 volumes:
-  reports:
-    driver: local
   logs:
     driver: local
   db-data:

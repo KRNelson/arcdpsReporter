@@ -1,28 +1,19 @@
-module Main exposing (..)
+module Main exposing (main)
+
+import Logs
+import Upload
+import Rotations
+import Mechanics
 
 import Browser
-import Html exposing (Html, div, h1, text, button)
-import Html.Attributes exposing (classList)
-import Html.Events exposing (onClick, onMouseDown)
-
-import Logs exposing (..)
-import Upload exposing (..)
-import Rotations exposing (..)
-import Mechanics exposing (..)
-
-import DateRangePicker as Picker
-import DateRangePicker.Range as Range
-
-import Bootstrap.Alert as Alert
-import Bootstrap.Form as Form
-import Bootstrap.Button as Button
+import Html exposing (Html, div, text)
+import Html.Events exposing (onMouseDown)
 import Bootstrap.CDN as CDN
-import Bootstrap.Spinner as Spinner
-import Bootstrap.Text as Text
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Tab as Tab
+import DateRangePicker as Picker
 
 main =
   -- Html.program
@@ -35,8 +26,7 @@ main =
 
 -- MODEL
 type alias Model =
-  { message : String
-  , logs : Logs.Model
+  { logs : Logs.Model
   , tabState : Tab.State
   , upload : Upload.Model
   , rotations : Rotations.Model
@@ -47,15 +37,22 @@ init : () -> ( Model, Cmd Msg )
 init _ =
   let
     model =
-      { message = "Main!"
-      , logs = Logs.default
+      { logs = Logs.default
       , tabState = Tab.initialState
       , upload = Upload.default
       , rotations = Rotations.default
       , mechanics = Mechanics.default
       }
   in
-    ( model, Cmd.batch [Cmd.map LogMsg Logs.getLogs, Cmd.map LogMsg <| Picker.now Logs.PickerChanged model.logs.pickerState] )
+    ( model
+    , Cmd.batch [
+        Cmd.map LogMsg Logs.getLogs
+        , Cmd.map LogMsg 
+        <| Picker.now 
+           Logs.PickerChanged 
+           model.logs.pickerState
+        ]
+    )
 
 -- UPDATE
 type Msg
@@ -78,25 +75,42 @@ update msg model =
     -- LoadPlayersFromLogs ->
     --   ( model, Cmd.map RotationsMsg <| Rotations.getPlayersFromLogs <| List.filter .selected model.logs.logs)
     LoadRotationsFromLogs ->
-      ( model, Cmd.map RotationsMsg <| Rotations.getRotationsFromLogs <|List.filter .selected model.logs.logs)
+      ( model
+      , Cmd.map RotationsMsg 
+      <| Rotations.getRotationsFromLogs 
+      <| List.filter .selected model.logs.logs
+      )
     LoadMechanicsFromLogs ->
-      ( model, Cmd.map MechanicsMsg <| Mechanics.getMechanicsFromLogs <|List.filter .selected model.logs.logs)
+      ( model
+      , Cmd.map MechanicsMsg 
+      <| Mechanics.getMechanicsFromLogs 
+      <| List.filter .selected model.logs.logs
+      )
     TabMsg tabState ->
       ({model | tabState = tabState}, Cmd.none)
     LogMsg logmsg ->
       let
-        (logmodel, logcmd) = Logs.update logmsg model.logs
+        (logmodel, logcmd)
+         = Logs.update logmsg model.logs
       in
-        ({model | logs = logmodel}, Cmd.map LogMsg logcmd)
+        ({model | logs = logmodel}
+        , Cmd.map LogMsg logcmd)
     UploadMsg uploadmsg ->
       let
-        (uploadmodel, uploadcmd) = Upload.update uploadmsg model.upload
+        (uploadmodel, uploadcmd)
+         = Upload.update uploadmsg model.upload
       in
         case uploadmsg of
-            LogUploaded _ -> 
-              ({model | upload = uploadmodel}, Cmd.batch [Cmd.map UploadMsg uploadcmd, Cmd.map LogMsg getLogs])
+            Upload.LogUploaded _ -> 
+              ({model | upload = uploadmodel}
+              , Cmd.batch [
+                  Cmd.map UploadMsg uploadcmd
+                  , Cmd.map LogMsg Logs.getLogs
+                ]
+              )
             _ ->
-              ({model | upload = uploadmodel}, Cmd.map UploadMsg uploadcmd)
+              ({model | upload = uploadmodel}
+              , Cmd.map UploadMsg uploadcmd)
     -- PlayersMsg playersmsg ->
     --   let
     --     (playersmodel, playerscmd) = Rotations.update playersmsg model.players
@@ -104,19 +118,31 @@ update msg model =
     --     ({model | players = playersmodel}, Cmd.map RotationsMsg playerscmd)
     RotationsMsg rotationsmsg ->
       let
-        (rotationsmodel, rotationscmd) = Rotations.update rotationsmsg model.rotations
+        (rotationsmodel, rotationscmd) 
+        = Rotations.update
+          rotationsmsg
+          model.rotations
       in
-        ({model | rotations = rotationsmodel}, Cmd.map RotationsMsg rotationscmd)
+        ({model | rotations = rotationsmodel}
+        , Cmd.map RotationsMsg rotationscmd)
     MechanicsMsg mechanicsmsg ->
       let
-        (mechanicsmodel, mechanicscmd) = Mechanics.update mechanicsmsg model.mechanics
+        (mechanicsmodel, mechanicscmd) 
+        = Mechanics.update
+          mechanicsmsg 
+          model.mechanics
       in
-        ({model | mechanics = mechanicsmodel}, Cmd.map MechanicsMsg mechanicscmd)
+        ({model | mechanics = mechanicsmodel}
+        , Cmd.map MechanicsMsg mechanicscmd)
 
 
 -- VIEW
 view : Model -> Html Msg
-view { message , tabState, logs, upload, rotations, mechanics} =
+view { tabState
+     , logs
+     , upload
+     , rotations
+     , mechanics} =
   div []
     [ CDN.stylesheet
     , Grid.containerFluid []
@@ -128,30 +154,54 @@ view { message , tabState, logs, upload, rotations, mechanics} =
               |> Tab.items
                 [ Tab.item
                   { id = "logs"
-                  , link = Tab.link [] [ text "Logs" ]
-                  , pane = Tab.pane [] [ 
-                      Html.map LogMsg <| Logs.view logs
+                  , link = Tab.link 
+                          [] 
+                          [ text "Logs" ]
+                  , pane = Tab.pane 
+                          [] [ 
+                            Html.map LogMsg 
+                            <| Logs.view logs
                     ]
                   }
                 , Tab.item
                   { id = "upload"
-                  , link = Tab.link [] [ text "Upload" ]
-                  , pane = Tab.pane [] [ 
-                      Html.map UploadMsg <| Upload.view upload
+                  , link = Tab.link 
+                          [] 
+                          [ text "Upload" ]
+                  , pane = Tab.pane 
+                          [] [ 
+                            Html.map 
+                            UploadMsg 
+                            <| Upload.view 
+                            upload
                     ]
                   }
                 , Tab.item
                   { id = "rotations"
-                  , link = Tab.link [ onMouseDown LoadRotationsFromLogs ] [ text "Rotations" ]
-                  , pane = Tab.pane [] [ 
-                      Html.map RotationsMsg <| Rotations.view rotations
+                  , link = Tab.link 
+                          [ onMouseDown 
+                          LoadRotationsFromLogs ] 
+                          [ text "Rotations" ]
+                  , pane = Tab.pane 
+                          [] [ 
+                            Html.map 
+                            RotationsMsg 
+                            <| Rotations.view 
+                            rotations
                     ]
                   }
                 , Tab.item
                   { id = "mechanics"
-                  , link = Tab.link [ onMouseDown LoadMechanicsFromLogs ] [ text "Mechanics" ]
-                  , pane = Tab.pane [] [ 
-                      Html.map MechanicsMsg <| Mechanics.view mechanics
+                  , link = Tab.link 
+                          [ onMouseDown 
+                          LoadMechanicsFromLogs ] 
+                          [ text "Mechanics" ]
+                  , pane = Tab.pane 
+                          [] [ 
+                            Html.map 
+                            MechanicsMsg 
+                            <| Mechanics.view 
+                            mechanics
                     ]
                   }
                 ]
@@ -162,4 +212,12 @@ view { message , tabState, logs, upload, rotations, mechanics} =
     ]
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.batch [Sub.map LogMsg <| Logs.subscriptions model.logs, Sub.map UploadMsg <| Upload.subscriptions model.upload, Sub.map RotationsMsg <| Rotations.subscriptions model.rotations, Tab.subscriptions model.tabState TabMsg]
+subscriptions model = Sub.batch [
+  Sub.map LogMsg 
+  <| Logs.subscriptions model.logs
+  , Sub.map UploadMsg 
+  <| Upload.subscriptions model.upload
+  , Sub.map RotationsMsg 
+  <| Rotations.subscriptions model.rotations
+  , Tab.subscriptions model.tabState TabMsg
+  ]

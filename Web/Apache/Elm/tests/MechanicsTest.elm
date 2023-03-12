@@ -45,7 +45,7 @@ suite =
                 \_ ->
                     let
                         (_, command) = M.init ()
-                        expected = Cmd.none
+                        expected = M.getMechanics
                     in
                         command 
                             |> Expect.equal expected

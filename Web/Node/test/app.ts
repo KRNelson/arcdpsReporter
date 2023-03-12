@@ -5,15 +5,6 @@ import app from './../express'
 import { server } from './../express'
 
 describe('App', () => {
-  /*
-  before(done => {
-    app.listen((err: unknown) => {
-      if (err) return done(err)
-      return done()
-    })
-  })
-  */
-
   it('works properly', done => {
     request(app)
     .get('/')

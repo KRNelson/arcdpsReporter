@@ -1,9 +1,6 @@
 FROM scottyhardy/docker-wine
-# FROM mono:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    # inotify-tools unzip sed bash
-    unzip sed
+RUN apt-get update && apt-get install -y --no-install-recommends unzip
 
 # ADD wine-mono-7.4.0-x86.msi .
 # RUN chmod +777 wine-mono-7.4.0-x86.msi
@@ -19,19 +16,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ADD GW2EI.zip .
 RUN unzip GW2EI.zip
 
-# RUN mkdir /etc/reports
-# RUN chmod +777 /etc/reports
-
-# RUN mkdir /etc/logs
-# RUN chmod +777 /etc/logs
-# ADD test.zevtc .
-
 ADD report.conf .
-
-# ADD process.sh .
-# RUN sed -i 's/\r$//' process.sh
-# RUN chmod +777 process.sh
-
 ENTRYPOINT ["/usr/bin/entrypoint"]
-
-# CMD ["/bin/bash", "process.sh"]

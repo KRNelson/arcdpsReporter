@@ -1,0 +1,2 @@
+# docker run --volume='C:\Users\kevin\OneDrive\Documents\Github\arcdpsReporter\Parsers\Elite Insights Parsers\etc\logs':/etc/logs -i -t arcdpsreporter_backend reprocess.sh
+docker exec -d arcdpsreporter_backend ./reprocess.sh

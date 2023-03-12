@@ -32,11 +32,7 @@ const sport: number = 3443;
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
 
-console.log("KC", JSON.stringify(kc));
-
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
-console.log("k8sApi", JSON.stringify(k8sApi));
-
 
 // Setup
 app.use(fileUpload({
@@ -50,7 +46,7 @@ app.use(morgan('dev'));
 
 // Handling '/' Request
 app.get('/', (_req, _res) => {
-    _res.send("TypeScript With Express?");
+    _res.send("TypeScript With Express");
 });
 
 // Handling '/test' Request
@@ -58,27 +54,46 @@ app.get('/test', (_req, _res) => {
     _res.send("Successful test!");
 });
 
-const user_file : string = env['MYSQL_USER_FILE'] as string;
-const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
+const fncdbconnection = () => {
+    try {
+        const user_file : string = env['MYSQL_USER_FILE'] as string;
+        const password_file : string = env['MYSQL_PASSWORD_FILE'] as string;
 
-const _user = path.resolve(user_file);
-const _password = path.resolve(password_file);
+        const _user = path.resolve(user_file);
+        const _password = path.resolve(password_file);
 
-const user = fs.readFileSync(_user, 'utf8').replace('\n', '')
-const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
- 
-const objConn : PoolOptions = {
-    host: 'localhost'
-    , port: 3306
-    , user: user
-    , password: password
-    , database: 'web'
-    , insecureAuth: true
-    , connectionLimit: 5
-};
+        const user = fs.readFileSync(_user, 'utf8').replace('\n', '')
+        const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
+        
+        const objConn : PoolOptions = {
+            host: 'localhost'
+            , port: 3306
+            , user: user
+            , password: password
+            , database: 'web'
+            , insecureAuth: true
+            , connectionLimit: 5
+        };
 
-//create mysql connection pool
-var dbconnection : any = createPool(objConn);
+        //create mysql connection pool
+        // var dbconnection : any = createPool(objConn);
+        return createPool(objConn);
+    } catch(err : any) {
+        const objConn : PoolOptions = {
+            host: 'localhost'
+            , port: 3306
+            , user: 'user'
+            , password: 'password'
+            , database: 'web'
+            , insecureAuth: true
+            , connectionLimit: 5
+        };
+
+        return createPool(objConn)
+    }
+}
+var dbconnection : any = fncdbconnection();
+
 
 // Attempt to catch disconnects 
 dbconnection.on('connection', function (connection : any) {
@@ -483,9 +498,6 @@ export const server = app.listen(port, () => {
 
 const privateKey = fs.readFileSync(__dirname + '/../server.key', 'utf8');
 const certificate = fs.readFileSync(__dirname + '/../server.crt', 'utf8');
-
-console.log("privateKey", privateKey);
-console.log("certificate", certificate);
 
 export const server = https.createServer({
     key: privateKey

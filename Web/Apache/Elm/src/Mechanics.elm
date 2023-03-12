@@ -1,4 +1,4 @@
-module Mechanics exposing (..)
+module Mechanics exposing (Model, main, default, init, Msg, getMechanicsFromLogs, update, view, subscriptions)
 
 import Browser
 import Html exposing (Html, div, h1, input, text, button, p)
@@ -46,6 +46,35 @@ type alias Mechanic =
     , description : String
     , total : Int 
     }
+
+type alias Identifier = String
+
+type alias AccountDetails = {account : String, character : String, profession : String}
+type alias MechanicDetail = {mechanic : String, description : String}
+type alias MechanicStats =
+  { mechanic : String
+  , description : String
+  , playerStats : Dict String {account : AccountDetails, total : Int}
+  }
+type alias PlayerStats = 
+  { account : String
+  , character : String
+  , profession : String
+  , mechanicStats : Dict String {mechanic : MechanicDetail, total : Int}
+  }
+
+type alias Mechanics = 
+  { identifier : Identifier
+    , fight : String
+    , fight_icon : String
+    , start : Result (List Parser.DeadEnd) Time.Posix
+
+    , player_stats : Dict String PlayerStats
+    , player_stats_state : Table.State
+    , mechanics_stats : Dict String MechanicStats
+    }
+
+
 
 type State = Loading 
            | Loaded
@@ -244,32 +273,6 @@ collapseMechanics mechanics =
     ) Dict.empty mechanics
   ))
 
-type alias Identifier = String
-
-type alias AccountDetails = {account : String, character : String, profession : String}
-type alias MechanicDetail = {mechanic : String, description : String}
-type alias MechanicStats =
-  { mechanic : String
-  , description : String
-  , playerStats : Dict String {account : AccountDetails, total : Int}
-  }
-type alias PlayerStats = 
-  { account : String
-  , character : String
-  , profession : String
-  , mechanicStats : Dict String {mechanic : MechanicDetail, total : Int}
-  }
-type alias Mechanics = 
-  { identifier : Identifier
-    , fight : String
-    , fight_icon : String
-    , start : Result (List Parser.DeadEnd) Time.Posix
-
-    , player_stats : Dict String PlayerStats
-    , player_stats_state : Table.State
-    , mechanics_stats : Dict String MechanicStats
-    }
-
 config : Table.Config Mechanic Msg
 config =
   Table.config
@@ -361,64 +364,6 @@ playerStatsTable mechanics =
                                , columns = player_stats_columns
                                }) mechanics.player_stats_state player_stats_list
       ]
-
-viewChart : Html.Html Msg
-viewChart =
-  div [style "margin-top" "2%", style "margin-left" "25%", style "height" "50%", style "width" "50%"]
-  [
-
-  C.chart
-    [ CA.height 300
-    , CA.width 300
-    -- , CE.onMouseMove OnHover (CE.getNearest CI.any)
-    -- , CE.onMouseLeave (OnHover [])
-    ]
-    [ C.xTicks []
-    , C.xLabels []
-    , C.yTicks []
-    , C.yLabels []
-    , C.list <|
-        let heatmapItem index value =
-              let x = toFloat (remainderBy 5 index) * 2
-                  y = toFloat (index // 5) * 2
-                  color =
-                    if value > 8  then "#0E4D64" else
-                    if value > 6  then "#137177" else
-                    if value > 4  then "#188977" else
-                    if value > 2  then "#1D9A6C" else
-                    if value > 0  then "#74C67A" else
-                    if value == 0 then "#99D492" else
-                    "#0A2F51"
-              in
-              C.custom
-                { name = "Temperature"
-                , color = color
-                , position = { x1 = x, x2 = x + 1, y1 = y, y2 = y + 1 }
-                , format = .y >> String.fromFloat >> (\v -> v ++ " C°")
-                , data = { x = toFloat index, y = value }
-                , render = \p ->
-                    CS.rect p
-                      [ CA.x1 x
-                      , CA.x2 (x + 2)
-                      , CA.y1 y
-                      , CA.y2 (y + 2)
-                      , CA.color color
-                      , CA.border "white"
-                      ]
-                }
-        in
-        List.indexedMap heatmapItem
-          [ 2, 5, 8, 5, 3
-          , 5, 7, 9, 0, 3
-          , 2, 4, 6, 3, 5
-          , 7, 9, 0, 3, 2
-          , 4, 6, 7, 8, 10
-          ]
-
-    , C.each [] <| \_ item ->
-        [ C.tooltip item [ CA.center, CA.offset 0, CA.onTopOrBottom ] [] [] ]
-    ]
-  ]
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none

@@ -19,10 +19,7 @@ Web/Apache/Elm/elm.js
 *.tar
 .travis.yml
 .gitignore
-rotations.json
 Web/Apache/server.crt
-.gitignore
-.gitignore
 Web/Node/server.key
 Web/Node/server.crt
 Web/Apache/server.key
@@ -33,3 +30,6 @@ Parsers/Elite Insights Parsers/report.conf.bk
 Parsers/Elite Insights Parsers/report2.conf
 Web/Apache/httpd-ssl.conf.bk
 Web/Apache/httpd.conf.bk
+Web/server.crt
+.gitignore
+Web/Apache/Elm/old/*

@@ -1,0 +1,1 @@
+docker run --volume='C:\Users\kevin\OneDrive\Documents\Github\arcdpsReporter\Parsers\Elite Insights Parsers\etc\logs':/etc/logs -i -t arcdpsreporter_parser wine /GuildWars2EliteInsights.exe -p -c /report.conf /etc/logs/test.zevtc
