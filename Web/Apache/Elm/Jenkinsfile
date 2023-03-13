@@ -26,8 +26,8 @@ pipeline {
             steps {
                 // withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh 'git status'
-                    sh 'echo %GIT_CREDS_USR%'
-                    sh 'echo %GIT_CREDS_PSW%'
+                    sh 'echo $GIT_CREDS_USR'
+                    sh 'echo $GIT_CREDS_PSW'
                     // sh 'git config --global user.email "jenkins@email.com"'
                     sh('git config --global user.name $GIT_CREDS_USR')
                     sh('git config --global user.password $GIT_CREDS_PSW')
