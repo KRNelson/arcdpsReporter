@@ -24,11 +24,13 @@ pipeline {
                 sh 'whoami'
                 sh 'pwd'
                 sh 'ls -la'
-                sh 'git status'
-                // withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                //     sh ("git tag -a some_tag -m 'Jenkins'")
-                //     sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
-                // }
+                // sh 'git status'
+                // sh 'git add'
+                withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    sh 'git status'
+                    // sh ("git tag -a some_tag -m 'Jenkins'")
+                    //sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
+                }
             }
         }
     }
