@@ -17,6 +17,7 @@ pipeline {
                 sh 'uglifyjs --output main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
                 sh 'ls -la'
                 sh 'ls /output -la'
+                archiveArtifacts artifacts: '/output/main.min.js'
             }
         }
     }
