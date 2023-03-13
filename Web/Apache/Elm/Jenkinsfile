@@ -34,7 +34,7 @@ pipeline {
                     sh 'git config user.name'
                     sh 'git config user.password'
                     sh 'git remote -v show'
-                    // sh 'git push --set-upstream origin master'
+                    sh 'git push origin master'
 
                     // sh ("git tag -a some_tag2 -m 'Jenkins'")
                     // sh ('git push https://$GIT_CREDS_USR:$GIT_CREDS_PSW@arcdpsReporter')
