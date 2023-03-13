@@ -8,6 +8,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'node --version'
+                sh 'npm install -g elm@0.19.1'
             }
         }
     }
