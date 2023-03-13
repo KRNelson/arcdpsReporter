@@ -13,7 +13,7 @@ pipeline {
                 sh 'whoami'
                 sh 'pwd'
                 sh 'ls -la'
-                sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json && ls -la'
+                sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json && ls ./build -la'
                 // sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
 
                 // sh 'uglifyjs --output ./Web/Apache/Elm/main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
