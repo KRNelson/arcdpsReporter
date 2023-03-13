@@ -8,12 +8,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'cd ./Web/Apache/Elm'
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'elm make ./src/Main.elm --optimize --output=main.js'
+                sh ''
+                sh 'elm make ./Web/Apache/Elm/src/Main.elm --optimize --output=main.js'
                 sh 'uglifyjs --output main.min.js --compress --mangle -- main.js'
             }
         }
