@@ -33,7 +33,7 @@ pipeline {
                     sh 'git commit -m "Jenkins Build"'
                     sh 'git config user.name'
                     sh 'git config user.password'
-                    sh 'git remove set-url origin https://$GIT_CREDS_USR@github.com/%GIT_CREDS_USR/arcdpsReporter'
+                    sh 'git remove set-url origin https://$GIT_CREDS_USR@github.com/$GIT_CREDS_USR/arcdpsReporter.git'
                     sh 'git remote -v show'
                     sh 'git push origin master'
 
