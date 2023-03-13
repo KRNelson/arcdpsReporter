@@ -8,6 +8,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                sh 'pwd'
                 sh 'elm make ./src/Main.elm --optimize --output=main.js'
                 sh 'uglifyjs --output main.min.js --compress --mangle -- main.js'
             }
