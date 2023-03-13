@@ -23,7 +23,7 @@ pipeline {
             steps {
                 sh 'git status -uno'
                 sh 'git add ./Web/Apache/Elm/main.min.js'
-                sh 'git commit -m "Jenkins Build" -uno'
+                sh 'git commit -m "Jenkins Build" -uno --allow-empty'
                 sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
             }
         }
