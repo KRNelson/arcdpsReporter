@@ -28,8 +28,10 @@ pipeline {
                 // sh 'git add'
                 withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh 'git status'
-                    // sh ("git tag -a some_tag -m 'Jenkins'")
-                    //sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
+                    sh 'git add main.min.js'
+                    sh 'git commit -m "Jenkins Build"'
+                    sh ("git tag -a some_tag -m 'Jenkins'")
+                    sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
                 }
             }
         }
