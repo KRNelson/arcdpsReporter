@@ -10,12 +10,9 @@ pipeline {
                 }
             }
             steps {
-                sh 'whoami'
-                sh 'pwd'
-                sh 'ls -la'
                 sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json'
-                sh 'uglifyjs --output ./Web/Node/build/express.min.js --compress --mangle -- ./Web/Node/build/express.js'
-                archiveArtifacts artifacts: 'Web/Node/build/express.min.js'
+                // sh 'uglifyjs --output ./Web/Node/build/express.min.js --compress --mangle -- ./Web/Node/build/express.js'
+                // archiveArtifacts artifacts: 'Web/Node/build/express.min.js'
             }
         }
         stage('Deploy') {
@@ -25,9 +22,9 @@ pipeline {
             }
             steps {
                 sh 'git status -uno'
-                sh 'git add ./Web/Node/build/express.min.js'
-                sh 'git commit -m "Jenkins Controller Build" -uno --allow-empty'
-                sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
+                // sh 'git add ./Web/Node/build/express.min.js'
+                // sh 'git commit -m "Jenkins Controller Build" -uno --allow-empty'
+                // sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
             }
         }
     }
