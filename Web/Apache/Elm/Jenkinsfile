@@ -16,32 +16,14 @@ pipeline {
             }
         }
         stage('Deploy') {
-            // agent {
-            //     docker {image 'alpine/git:latest'}
-            // }
             agent any
             environment {
                 GIT_CREDS = credentials('git-token')
             }
             steps {
-                // withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    sh 'git status'
-                    sh 'echo $GIT_CREDS'
-                    // sh 'git config --global user.email "jenkins@email.com"'
-                    // sh('git config --global user.name $GIT_CREDS_USR')
-                    // sh('git config --global user.password $GIT_CREDS_PSW')
-                    sh 'git add ./Web/Apache/Elm/main.min.js'
-                    sh 'git commit -m "Jenkins Build"'
-                    // sh 'git config user.name'
-                    // sh 'git config user.password'
-                    // sh 'git remote set-url origin https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/$GIT_CREDS_USR/arcdpsReporter.git'
-                    // sh 'git remote -v show'
-                    // sh 'git push origin master'
-
-                    // sh ("git tag -a some_tag2 -m 'Jenkins'")
-                    // sh ('git push https://$GIT_CREDS_USR:$GIT_CREDS_PSW@arcdpsReporter')
-                    sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
-                // }
+                sh 'git add ./Web/Apache/Elm/main.min.js'
+                sh 'git commit -m "Jenkins Build"'
+                sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
             }
         }
     }
