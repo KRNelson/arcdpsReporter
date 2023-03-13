@@ -20,12 +20,15 @@ pipeline {
             //     docker {image 'alpine/git:latest'}
             // }
             agent any
+            environment {
+                EXAMPLE_CREDS = credentials('8e125cbe-0307-46f1-b94e-7f09e7ceacdd')
+            }
             steps {
-                withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                // withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh 'git status'
                     // sh 'git config --global user.email "jenkins@email.com"'
-                    // sh('git config --global user.name \"$GIT_USERNAME\"')
-                    // sh('git config --global user.password \"$GIT_PASSWORD\"')
+                    sh('git config --global user.name $GIT_USERNAME')
+                    sh('git config --global user.password $GIT_PASSWORD')
                     sh 'git add main.min.js'
                     sh 'git commit -m "Jenkins Build"'
                     sh 'git config user.name'
@@ -33,7 +36,7 @@ pipeline {
 
                     // sh ("git tag -a some_tag2 -m 'Jenkins'")
                     // sh ("git push https://$GIT_USERNAME:$GIT_PASSWORD@arcdpsReporter --tags")
-                }
+                // }
             }
         }
     }
