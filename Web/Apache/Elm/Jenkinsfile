@@ -35,7 +35,7 @@ pipeline {
                     // sh 'git push --set-upstream origin master'
 
                     // sh ("git tag -a some_tag2 -m 'Jenkins'")
-                    sh ('git push https://$GIT_USERNAME:$GIT_PASSWORD@arcdpsReporter')
+                    sh ('git push https://$GIT_CRED_USR:$GIT_CRED_PSW@arcdpsReporter')
                 // }
             }
         }
