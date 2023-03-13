@@ -13,6 +13,10 @@ pipeline {
                 sh 'uglifyjs --output main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
                 archiveArtifacts artifacts: 'main.min.js'
             }
+
+            withCredentials([usernamePassword(credentialsId: 'git-pass-redentials-ID', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                sh ("git status")
+            }
         }
     }
 }
