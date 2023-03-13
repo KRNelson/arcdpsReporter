@@ -12,7 +12,7 @@ pipeline {
             steps {
                 sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
                 sh 'uglifyjs --output ./Web/Apache/Elm/main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
-                archiveArtifacts artifacts: './Web/Apache/Elm/main.min.js'
+                archiveArtifacts artifacts: 'Web/Apache/Elm/main.min.js'
             }
         }
         stage('Deploy') {
