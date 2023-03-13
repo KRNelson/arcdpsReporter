@@ -20,10 +20,13 @@ pipeline {
                 docker {image 'alpine/git:latest'}
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    sh ("git tag -a some_tag -m 'Jenkins'")
-                    sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
-                }
+                sh 'whoami'
+                sh 'pwd'
+                sh 'ls -la'
+                // withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                //     sh ("git tag -a some_tag -m 'Jenkins'")
+                //     sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
+                // }
             }
         }
     }
