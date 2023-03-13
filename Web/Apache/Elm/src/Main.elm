@@ -118,8 +118,7 @@ update msg model =
     --     ({model | players = playersmodel}, Cmd.map RotationsMsg playerscmd)
     RotationsMsg rotationsmsg ->
       let
-        (rotationsmodel, rotationscmd) 
-        = Rotations.update
+        (rotationsmodel, rotationscmd) = Rotations.update
           rotationsmsg
           model.rotations
       in
@@ -127,8 +126,7 @@ update msg model =
         , Cmd.map RotationsMsg rotationscmd)
     MechanicsMsg mechanicsmsg ->
       let
-        (mechanicsmodel, mechanicscmd) 
-        = Mechanics.update
+        (mechanicsmodel, mechanicscmd) = Mechanics.update
           mechanicsmsg 
           model.mechanics
       in
