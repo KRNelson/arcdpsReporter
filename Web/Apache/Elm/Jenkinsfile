@@ -11,7 +11,7 @@ pipeline {
             }
             steps {
                 sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
-                sh 'uglifyjs --output main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
+                sh 'uglifyjs --output ./Web/Apache/Elm/main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
                 archiveArtifacts artifacts: 'main.min.js'
             }
         }
@@ -30,7 +30,7 @@ pipeline {
                     // sh 'git config --global user.email "jenkins@email.com"'
                     // sh('git config --global user.name $GIT_CREDS_USR')
                     // sh('git config --global user.password $GIT_CREDS_PSW')
-                    sh 'git add main.min.js'
+                    sh 'git add ./Web/Apache/Elm/main.min.js'
                     sh 'git commit -m "Jenkins Build"'
                     // sh 'git config user.name'
                     // sh 'git config user.password'
