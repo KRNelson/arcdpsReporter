@@ -27,7 +27,7 @@ pipeline {
                     sh 'git config --global user.name "Jenkins"'
                     sh 'git add main.min.js'
                     sh 'git commit -m "Jenkins Build"'
-                    sh 'git push'
+                    sh 'git push --set-upstream origin master'
                     // sh ("git tag -a some_tag2 -m 'Jenkins'")
                     // sh ("git push https://$GIT_USERNAME:$GIT_PASSWORD@arcdpsReporter --tags")
                 }
