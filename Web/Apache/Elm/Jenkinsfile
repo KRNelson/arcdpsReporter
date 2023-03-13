@@ -33,7 +33,7 @@ pipeline {
                     sh 'git commit -m "Jenkins Build"'
                     sh 'git config user.name'
                     sh 'git config user.password'
-                    sh 'git remove -v show'
+                    sh 'git remote -v show'
                     // sh 'git push --set-upstream origin master'
 
                     // sh ("git tag -a some_tag2 -m 'Jenkins'")
