@@ -17,7 +17,7 @@ pipeline {
         }
         stage('Deploy') {
             agent {
-                docker {image 'alpine/git'}
+                docker {image 'alpine/git:latest'}
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
