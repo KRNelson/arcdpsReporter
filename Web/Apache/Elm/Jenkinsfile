@@ -21,6 +21,7 @@ pipeline {
                 GIT_CREDS = credentials('git-token')
             }
             steps {
+                sh 'git status'
                 sh 'git add ./Web/Apache/Elm/main.min.js'
                 sh 'git commit -m "Jenkins Build"'
                 sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
