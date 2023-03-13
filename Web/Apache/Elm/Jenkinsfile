@@ -16,9 +16,10 @@ pipeline {
             }
         }
         stage('Deploy') {
-            agent {
-                docker {image 'alpine/git:latest'}
-            }
+            // agent {
+            //     docker {image 'alpine/git:latest'}
+            // }
+            agent any
             steps {
                 sh 'whoami'
                 sh 'pwd'
