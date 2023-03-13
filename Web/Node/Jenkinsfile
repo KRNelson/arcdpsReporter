@@ -22,9 +22,9 @@ pipeline {
             }
             steps {
                 sh 'git status -uno'
-                // sh 'git add ./Web/Node/build/express.min.js'
-                // sh 'git commit -m "Jenkins Controller Build" -uno --allow-empty'
-                // sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
+                sh 'git add ./Web/Node/build/express.min.js'
+                sh 'git commit -m "Jenkins Controller Build" -uno --allow-empty'
+                sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
             }
         }
     }
