@@ -14,8 +14,7 @@ pipeline {
                 archiveArtifacts artifacts: 'main.min.js'
 
                 withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    git tag -a some_tag -m 'Jenkins'
-                    // sh ("git tag -a some_tag -m 'Jenkins'")
+                    sh ("git tag -a some_tag -m 'Jenkins'")
                     // sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
                 }
             }
