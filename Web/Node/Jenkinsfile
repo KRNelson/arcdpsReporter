@@ -1,0 +1,37 @@
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                dockerfile {
+                    filename 'build.Dockerfile'
+                    dir './Web/Node'
+                    args '-u root --privileged'
+                }
+            }
+            steps {
+                sh 'whoami'
+                sh 'pwd'
+                sh 'ls -la'
+                // sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
+
+                // sh 'uglifyjs --output ./Web/Apache/Elm/main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
+                // archiveArtifacts artifacts: 'Web/Node/express.js'
+            }
+        }
+        /*
+        stage('Deploy') {
+            agent any
+            environment {
+                GIT_CREDS = credentials('git-token')
+            }
+            steps {
+                sh 'git status -uno'
+                sh 'git add ./Web/Apache/Elm/main.min.js'
+                sh 'git commit -m "Jenkins Build" -uno --allow-empty'
+                sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
+            }
+        }
+        */
+    }
+}

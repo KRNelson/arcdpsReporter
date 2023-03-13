@@ -1,10 +1,10 @@
 FROM node
 
-ENV MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
-ENV MYSQL_ROOT_HOST_FILE=/run/secrets/host
-ENV MYSQL_DATABASE_FILE=/run/secrets/database
-ENV MYSQL_USER_FILE=/run/secrets/user
-ENV MYSQL_PASSWORD_FILE=/run/secrets/password
+# ENV MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
+# ENV MYSQL_ROOT_HOST_FILE=/run/secrets/host
+# ENV MYSQL_DATABASE_FILE=/run/secrets/database
+# ENV MYSQL_USER_FILE=/run/secrets/user
+# ENV MYSQL_PASSWORD_FILE=/run/secrets/password
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
