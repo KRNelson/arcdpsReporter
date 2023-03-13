@@ -26,10 +26,10 @@ pipeline {
                     sh 'git config --global user.email "jenkins@email.com"'
                     sh 'git config --global user.name "Jenkins"'
                     sh 'git add main.min.js'
-                    sh "echo $GIT_USERNAME"
-                    sh "echo $GIT_PASSWORD"
+                    sh ("echo $GIT_USERNAME")
+                    sh ("echo $GIT_PASSWORD")
                     sh 'git commit -m "Jenkins Build"'
-                    sh ("git tag -a some_tag -m 'Jenkins'")
+                    sh ("git tag -a some_tag -m 'Jenkins2'")
                     sh ("git push https://$GIT_USERNAME:$GIT_PASSWORD@arcdpsReporter --tags")
                 }
             }
