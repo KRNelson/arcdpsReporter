@@ -9,14 +9,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'whoami'
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'ls /output -la'
                 sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
                 sh 'uglifyjs --output main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
-                sh 'ls -la'
-                sh 'ls /output -la'
                 archiveArtifacts artifacts: 'main.min.js'
             }
         }
