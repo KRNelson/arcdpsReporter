@@ -3,7 +3,7 @@ pipeline {
         dockerfile {
             filename 'Dockerfile'
             dir './Web/Apache/Elm'
-            args '-u root --privileged -v $WORKSPACE:/output'
+            args '-u root --privileged'
         }
     }
     stages {
