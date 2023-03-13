@@ -13,14 +13,11 @@ pipeline {
                 sh 'whoami'
                 sh 'pwd'
                 sh 'ls -la'
-                sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json && ls ./build -la'
-                // sh 'cd ./Web/Apache/Elm && elm make ./src/Main.elm --optimize --output=main.js'
-
-                // sh 'uglifyjs --output ./Web/Apache/Elm/main.min.js --compress --mangle -- ./Web/Apache/Elm/main.js'
-                // archiveArtifacts artifacts: 'Web/Node/express.js'
+                sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json'
+                sh 'uglifyjs --output ./Web/Node/build/express.min.js --compress --mangle -- ./Web/Node/build/express.js'
+                archiveArtifacts artifacts: 'Web/Node/build/express.min.js'
             }
         }
-        /*
         stage('Deploy') {
             agent any
             environment {
@@ -28,11 +25,10 @@ pipeline {
             }
             steps {
                 sh 'git status -uno'
-                sh 'git add ./Web/Apache/Elm/main.min.js'
-                sh 'git commit -m "Jenkins Build" -uno --allow-empty'
+                sh 'git add ./Web/Node/build/express.min.js'
+                sh 'git commit -m "Jenkins Controller Build" -uno --allow-empty'
                 sh ('git push https://$GIT_CREDS@github.com/KRNelson/arcdpsReporter')
             }
         }
-        */
     }
 }
