@@ -21,14 +21,13 @@ pipeline {
             // }
             agent any
             steps {
-                sh 'whoami'
-                sh 'pwd'
-                sh 'ls -la'
-                // sh 'git status'
-                // sh 'git add'
                 withCredentials([usernamePassword(credentialsId: '8e125cbe-0307-46f1-b94e-7f09e7ceacdd', passwordVariable:'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh 'git status'
+                    sh 'git config --global user.email "jenkins@email.com"'
+                    sh 'git config --global user.name "Jenkins"'
                     sh 'git add main.min.js'
+                    sh "echo ${GIT_USERNAME}"
+                    sh "echo ${GIT_PASSWORD}"
                     sh 'git commit -m "Jenkins Build"'
                     sh ("git tag -a some_tag -m 'Jenkins'")
                     sh ("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@arcdpsReporter --tags")
