@@ -3,7 +3,7 @@ pipeline {
         dockerfile {
             filename 'Dockerfile'
             dir './Web/Apache/Elm'
-            args '-u rot --previleged'
+            args '-u root --privileged'
         }
     }
     stages {
