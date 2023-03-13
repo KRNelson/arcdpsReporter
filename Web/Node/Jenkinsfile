@@ -10,7 +10,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'cd ./Web/Node && npm install package.json && rm -rf ./build/express.min.js && tsc --project tsconfig.json'
+                sh 'cd ./Web/Node && npm install package.json && tsc --project tsconfig.json'
                 sh 'uglifyjs --output ./Web/Node/build/express.min.js --compress --mangle -- ./Web/Node/build/express.js'
                 archiveArtifacts artifacts: 'Web/Node/build/express.min.js'
             }
