@@ -30,7 +30,7 @@ RUN sed -i \
 COPY server.crt /usr/local/apache2/conf/server.crt
 COPY server.key /usr/local/apache2/conf/server.key
 
-COPY ./Elm/main.min.js /usr/local/apache2/htdocs/js/main.min.js
+COPY ../Elm/main.min.js /usr/local/apache2/htdocs/js/main.min.js
 
 # RUN cd ./Elm && elm make ./src/Main.elm --optimize --output=/usr/local/apache2/htdocs/js/main.js && uglifyjs --output /usr/local/apache2/htdocs/js/main.min.js --compress --mangle -- /usr/local/apache2/htdocs/js/main.js
 
