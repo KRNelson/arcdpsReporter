@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "uglify-js": "^3.17.0"
-  },
-  "devDependencies": {
-    "elm-test": "^0.19.1-revision9"
-  }
-}

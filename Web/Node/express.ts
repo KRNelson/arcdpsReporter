@@ -66,7 +66,7 @@ const fncdbconnection = () => {
         const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
         
         const objConn : PoolOptions = {
-            host: 'localhost'
+            host: 'arcdpsreporter_backend_vg'
             , port: 3306
             , user: user
             , password: password
@@ -80,7 +80,7 @@ const fncdbconnection = () => {
         return createPool(objConn);
     } catch(err : any) {
         const objConn : PoolOptions = {
-            host: 'localhost'
+            host: 'arcdpsreporter_backend_vg'
             , port: 3306
             , user: 'user'
             , password: 'password'
@@ -491,13 +491,13 @@ app.get('/reprocess', (req, res) => {
 
 
 // Server setup
-/*
 export const server = app.listen(port, () => {
+    console.log("Express server listening to port " + port);
 });
-*/
 
-const privateKey = fs.readFileSync(__dirname + '/../server.key', 'utf8');
-const certificate = fs.readFileSync(__dirname + '/../server.crt', 'utf8');
+/*
+const privateKey = fs.readFileSync(__dirname + 'server.key', 'utf8');
+const certificate = fs.readFileSync(__dirname + 'server.crt', 'utf8');
 
 export const server = https.createServer({
     key: privateKey
@@ -505,5 +505,6 @@ export const server = https.createServer({
 }, app).listen(sport, () => {
     console.log("Express server listening to port " + sport);
 });
+*/
 
 export default app

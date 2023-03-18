@@ -1,28 +1,21 @@
+# 
 services:
-  frontend:
-    build: ./Web/Apache
-    container_name: arcdpsreporter_frontend
-    volumes:
-      - logs:/etc/logs
-    ports:
-      - "8080:80"
   node:
     build: ./Web/Node
     container_name: arcdpsreporter_node
-    volumes:
-      - logs:/etc/logs
     secrets:
       - user
       - password
     environment:
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
+    ports:
+      - "3000:3000"
   backend:
-    build: ./Database/MySQL
-    container_name: arcdpsreporter_backend
+    build: './Database/MySQL/Restores/Vale Guardian'
+    container_name: arcdpsreporter_backend_vg
     volumes:
       - db-data:/etc/data
-      - logs:/etc/logs
     secrets:
       - root
       - user
@@ -32,14 +25,7 @@ services:
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
     command: --default-authentication-plugin=mysql_native_password
-  parser:
-    build: './Parsers/Elite Insights Parsers'
-    container_name: arcdpsreporter_parser
-    volumes: 
-      - logs:/etc/logs
 volumes:
-  logs:
-    driver: local
   db-data:
     driver: local
 secrets:

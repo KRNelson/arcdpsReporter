@@ -33,3 +33,4 @@ Web/Apache/httpd.conf.bk
 Web/server.crt
 .gitignore
 Web/Apache/Elm/old/*
+Database/MySQL/Restores/Vale Guardian/rpt.sql

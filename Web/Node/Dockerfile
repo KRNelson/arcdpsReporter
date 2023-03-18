@@ -1,4 +1,6 @@
 FROM node
+RUN npm install -g typescript@latest
+RUN npm install -g uglify-js
 
 ENV MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
 ENV MYSQL_ROOT_HOST_FILE=/run/secrets/host
@@ -13,14 +15,20 @@ COPY server.crt server.crt
 COPY server.key server.key
 
 
-COPY ./build/express.min.js .
+# COPY ./build/express.min.js .
 COPY package.json .
 
 RUN npm install package.json
 
+COPY express.ts .
+COPY tsconfig.json .
+RUN tsc --project tsconfig.json
+
+
 # If you are building your code for production
 # RUN npm ci --only=production
 
-EXPOSE 3443
+# EXPOSE 3443
+EXPOSE 3000
 
-CMD ["node", "express.min.js"]
+CMD ["node", "./build/express.js"]
