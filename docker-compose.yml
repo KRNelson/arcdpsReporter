@@ -12,8 +12,8 @@ services:
     ports:
       - "3000:3000"
   backend:
-    build: './Database/MySQL/Restores/Vale Guardian'
-    container_name: arcdpsreporter_backend_vg
+    build: './Database/MySQL/Restores/test'
+    container_name: arcdpsreporter_backend_test
     volumes:
       - db-data:/etc/data
     secrets:
@@ -24,6 +24,8 @@ services:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root
       - MYSQL_USER_FILE=/run/secrets/user
       - MYSQL_PASSWORD_FILE=/run/secrets/password
+    ports:
+      - "3306:3306"
     command: --default-authentication-plugin=mysql_native_password
 volumes:
   db-data:
