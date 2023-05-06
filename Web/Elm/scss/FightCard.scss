@@ -1,0 +1,82 @@
+$font-stack: Roboto, Helvetica, sans-serif;
+$primary-color: #333;
+$card-background-color: #F0F;
+$card-header-color: #0F0;
+$card-footer-color: #FF0;
+$card-player-color: rgb(93, 184, 93);
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+}
+
+div.card.fight {
+  background-color: $card-background-color;
+
+  h1.card-header {
+    text-align: center;
+    background-color: $card-header-color;
+  }
+
+  div.card-body {
+    div.card-custom {
+      div.subgroup {
+        float: left;
+
+        span.subgroup-number {
+          font-size: 48px;
+          position: relative;
+          top: 25px;
+        }
+
+        div.players {
+          float: right;
+
+          div.player {
+            float: left;
+            background-color: $card-player-color;
+
+            margin: 10px;
+            padding: 10px;
+            height: 150px;
+            width: 150px;
+
+            border: white;
+            border-style: solid;
+
+            span.profession {
+              font-weight: bold;
+              color: white;
+            }
+
+            span.dps {
+              display: block; 
+            }
+
+            span.boons {
+              display: block; 
+            }
+
+            span.rez {
+              display: block; 
+            }
+
+            span.downs {
+              display: block; 
+            }
+
+            span.time {
+              display: block; 
+            }
+          }
+        }
+      }
+    }
+  }
+
+  div.card-footer {
+    text-align: center;
+    background-color: $card-footer-color;
+  }
+}
+

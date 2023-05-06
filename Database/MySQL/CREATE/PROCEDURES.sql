@@ -257,6 +257,45 @@ BEGIN
 		;
 		/** END: SkillMap **/
 
+		/** BEGIN: BuffMap **/
+		INSERT INTO rpt.IRPTBUF_BUF (
+			LOG_SYS_NR
+			,LOG_BUF_ID 
+			)
+			SELECT @newID AS LOG_SYS_NR
+					, BuffIDs.LOG_BUF_ID
+			FROM JSON_TABLE(JSON_KEYS(jsonObject->> '$.buffMap')
+							,'$[*]' COLUMNS (
+								LOG_BUF_ID CHAR(6) PATH '$'
+							)) BuffIDs
+		;
+
+		INSERT INTO rpt.IRPTBUF_MAP (
+			LOG_SYS_NR
+			,LOG_BUF_ID 
+
+			,LOG_BUF_NA -- string Name
+			,LOG_ICN_TE -- string Icon
+			,LOG_STK_IR -- bool Stacking
+			,LOG_CHL_IR -- bool ConversionBasedHealing
+			,LOG_HHL_IR -- bool HybridHealing
+			)
+			SELECT @newID AS LOG_SYS_NR
+					,BuffMap.LOG_BUF_ID AS LOG_BUF_ID
+
+					, JSON_EXTRACT(BuffMap.Buff, '$.name') AS LOG_BUF_NA
+					, JSON_EXTRACT(BuffMap.Buff, '$.icon') AS LOG_ICN_TE
+					, CASE JSON_EXTRACT(BuffMap.Buff, '$.stacking') WHEN 'true' THEN 1 WHEN 'false' THEN 0 ELSE NULL END AS LOG_STK_IR
+					, CASE JSON_EXTRACT(BuffMap.Buff, '$.conversionBasedHealing') WHEN 'true' THEN 1 WHEN 'false' THEN 0 ELSE NULL END AS LOG_CHL_IR
+					, CASE JSON_EXTRACT(BuffMap.Buff, '$.hybridHealing') WHEN 'true' THEN 1 WHEN 'false' THEN 0 ELSE NULL END AS LOG_HHL_IR
+		FROM (
+			SELECT LOG_BUF_ID, JSON_EXTRACT(JSON_EXTRACT(jsonObject, '$.buffMap'), CONCAT('$."', LOG_BUF_ID, '"')) Buff
+			FROM rpt.IRPTBUF_BUF BUF
+			WHERE LOG_SYS_NR=@newID
+		) BuffMap
+		;
+		/** END: BuffMap **/
+
 		/** BEGIN: Players **/
 	INSERT INTO rpt.IRPTACT_ACTORS(
 		LOG_SYS_NR
@@ -405,6 +444,442 @@ BEGIN
 					,LOG_ACT_BRK_DMG_NR INT PATH '$.actorBreakbarDamage'
 				)) DPS
 		;
+	INSERT INTO rpt.IRPTPLY_SLFBUFF (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', SelfBuffs.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.selfBuffs'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) SelfBuffs
+			,JSON_TABLE(SelfBuffs.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_GRPBUFF (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', GroupBuffs.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.groupBuffs'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) GroupBuffs
+			,JSON_TABLE(GroupBuffs.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_OFFBUFF (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', OffGroupBuffs.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.offGroupBuffs'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) OffGroupBuffs
+			,JSON_TABLE(OffGroupBuffs.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_SQDBUFF (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', SquadBuffs.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.squadBuffs'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) SquadBuffs
+			,JSON_TABLE(SquadBuffs.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_SLFBUFFACT (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', SelfBuffsActive.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.selfBuffsActive'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) SelfBuffsActive
+			,JSON_TABLE(SelfBuffsActive.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_GRPBUFFACT (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', GroupBuffsActive.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.groupBuffsActive'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) GroupBuffsActive
+			,JSON_TABLE(GroupBuffsActive.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_OFFBUFFACT (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', OffGroupBuffsActive.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.offGroupBuffsActive'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) OffGroupBuffsActive
+			,JSON_TABLE(OffGroupBuffsActive.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_SQDBUFFACT (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+		, LOG_BUF_GEN
+		, LOG_OVR_GEN
+		, LOG_WST_GEN
+		, LOG_UEX_GEN
+		, LOG_BEX_GEN
+		, LOG_EXT_GEN		
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', SquadBuffsActive.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_GEN
+				, BuffData.LOG_OVR_GEN
+				, BuffData.LOG_WST_GEN
+				, BuffData.LOG_UEX_GEN
+				, BuffData.LOG_BEX_GEN
+				, BuffData.LOG_EXT_GEN		
+					
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.squadBuffsActive'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) SquadBuffsActive
+			,JSON_TABLE(SquadBuffsActive.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_GEN FLOAT PATH '$.generation'
+					, LOG_OVR_GEN FLOAT PATH '$.overstack'
+					, LOG_WST_GEN FLOAT PATH '$.wasted'
+					, LOG_UEX_GEN FLOAT PATH '$.unknownExtended'
+					, LOG_BEX_GEN FLOAT PATH '$.byExtension'
+					, LOG_EXT_GEN FLOAT PATH '$.extended'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_BUFUPTM (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+
+		, LOG_BUF_UP
+		, LOG_BUF_PR
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', BuffUptimes.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_UP
+				, BuffData.LOG_BUF_PR
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.buffUptimes'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) BuffUptimes
+			,JSON_TABLE(BuffUptimes.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_UP FLOAT PATH '$.uptime'
+					, LOG_BUF_PR FLOAT PATH '$.presence'
+			)) BuffData
+		;
+
+	INSERT INTO rpt.IRPTPLY_BUFUPTMACT (
+		LOG_SYS_NR
+		, LOG_ACC_NA
+		, LOG_BUF_ID
+		, LOG_PHS_NR
+
+		, LOG_BUF_UP
+		, LOG_BUF_PR
+		)
+		SELECT @newID AS LOG_SYS_NR
+				, Players.LOG_ACC_NA
+				, CONCAT('b', BuffUptimes.LOG_BUF_ID) AS LOG_BUF_ID
+				, BuffData.LOG_PHS_NR - 1
+				, BuffData.LOG_BUF_UP
+				, BuffData.LOG_BUF_PR
+		FROM JSON_TABLE(jsonObject->>'$.players'
+				,'$[*]' COLUMNS(
+					LOG_ACC_NA NVARCHAR(256) PATH '$.account'
+					,LOG_BUF_TBL JSON PATH '$.buffUptimesActive'
+			)) Players
+			,JSON_TABLE(Players.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_BUF_ID CHAR(10) PATH '$.id'
+					,LOG_BUF_TBL JSON PATH '$.buffData'
+			)) BuffUptimes
+			,JSON_TABLE(BuffUptimes.LOG_BUF_TBL->>'$'
+				,'$[*]' COLUMNS(
+					 LOG_PHS_NR FOR ORDINALITY
+
+					, LOG_BUF_UP FLOAT PATH '$.uptime'
+					, LOG_BUF_PR FLOAT PATH '$.presence'
+			)) BuffData
+		;
+
 		/** END: Players **/
 
 		/** BEGIN: Mechanics **/
@@ -496,6 +971,62 @@ BEGIN
 					,LOG_QIK_NR FLOAT PATH '$.quickness'
 				)) Skills
 		;
+
+		-- Add to Summary
+		SELECT LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, COUNT(PLY.LOG_ACC_NA) AS GRP_CNT_NR, SUM(DPS.LOG_DMG_NR) / LOG.LOG_DUR_MS * 1000 AS AVG_DPS_NR
+		FROM rpt.ILOGELT_INSIGHTS LOG
+		INNER JOIN rpt.IRPTPLY_PLAYERS PLY
+			ON LOG.LOG_SYS_NR = PLY.LOG_SYS_NR
+		INNER JOIN rpt.IRPTPLY_DPSTARGETS DPS
+			ON PLY.LOG_SYS_NR = DPS.LOG_SYS_NR
+			AND PLY.LOG_ACC_NA = DPS.LOG_ACC_NA
+		WHERE DPS.LOG_TGT_NR=0
+		AND DPS.LOG_PHS_NR=0
+		GROUP BY LOG.LOG_SYS_NR, LOG.LOG_DUR_MS, PLY.LOG_GRP_NR
+		;
+
+		SELECT LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, BMAP.LOG_BUF_NA, SUM(BUF.LOG_BUF_UP) / COUNT(BUF.LOG_BUF_UP) AS AVG_BUF_UP
+		FROM rpt.ILOGELT_INSIGHTS LOG
+		INNER JOIN rpt.IRPTPLY_PLAYERS PLY
+			ON LOG.LOG_SYS_NR = PLY.LOG_SYS_NR
+		INNER JOIN rpt.IRPTPLY_BUFUPTM BUF
+			ON PLY.LOG_SYS_NR = BUF.LOG_SYS_NR
+			AND PLY.LOG_ACC_NA = BUF.LOG_ACC_NA
+		INNER JOIN rpt.IRPTBUF_MAP BMAP
+			ON BUF.LOG_SYS_NR = BMAP.LOG_SYS_NR
+			AND BUF.LOG_BUF_ID = BMAP.LOG_BUF_ID
+		WHERE BUF.LOG_PHS_NR=0
+		AND BUF.LOG_BUF_ID IN ('b30328', 'b740', 'b1187', 'b725')
+		GROUP BY LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, BMAP.LOG_BUF_NA
+		;
+
+		SELECT LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, BMAP.LOG_BUF_NA, SUM(BUF.LOG_BUF_GEN) / COUNT(BUF.LOG_BUF_GEN) AS AVG_BUF_GEN
+		FROM rpt.ILOGELT_INSIGHTS LOG
+		INNER JOIN rpt.IRPTPLY_PLAYERS PLY
+			ON LOG.LOG_SYS_NR = PLY.LOG_SYS_NR
+		INNER JOIN rpt.IRPTPLY_GRPBUFF BUF
+			ON PLY.LOG_SYS_NR = BUF.LOG_SYS_NR
+			AND PLY.LOG_ACC_NA = BUF.LOG_ACC_NA
+		INNER JOIN rpt.IRPTBUF_MAP BMAP
+			ON BUF.LOG_SYS_NR = BMAP.LOG_SYS_NR
+			AND BUF.LOG_BUF_ID = BMAP.LOG_BUF_ID
+		WHERE BUF.LOG_PHS_NR=0
+		AND BUF.LOG_BUF_ID IN ('b30328', 'b740', 'b1187', 'b725')
+		GROUP BY LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, BMAP.LOG_BUF_NA
+		;
+
+		SELECT LOG.LOG_SYS_NR, PLY.LOG_GRP_NR, MCH.LOG_MCH_NA, COUNT(MCH.LOG_TIM_NR) AS MCH_CNT_NR
+		FROM rpt.ILOGELT_INSIGHTS LOG
+		INNER JOIN rpt.IRPTPLY_PLAYERS PLY
+			ON LOG.LOG_SYS_NR = PLY.LOG_SYS_NR
+		INNER JOIN rpt.IRPTMCH_DATA MCH
+			ON PLY.LOG_SYS_NR = MCH.LOG_SYS_NR
+			AND PLY.LOG_CHR_NA = MCH.LOG_ACT_NA
+		WHERE LOG.LOG_SYS_NR='cca352a8-c6ca-11ed-9706-0242c0a85002'
+		AND MCH.LOG_MCH_NA IN ('Dead', 'Downed', 'Res')
+		GROUP BY LOG.LOG_SYS_NR, LOG.LOG_DUR_MS, PLY.LOG_GRP_NR, MCH.LOG_MCH_NA
+		;
+
 END//
 
 USE rpt

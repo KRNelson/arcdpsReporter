@@ -66,7 +66,7 @@ const fncdbconnection = () => {
         const password = fs.readFileSync(_password, 'utf8').replace('\n', '');
         
         const objConn : PoolOptions = {
-            host: 'arcdpsreporter_backend_vg'
+            host: 'arcdpsreporter_backend'
             , port: 3306
             , user: user
             , password: password
@@ -80,7 +80,7 @@ const fncdbconnection = () => {
         return createPool(objConn);
     } catch(err : any) {
         const objConn : PoolOptions = {
-            host: 'arcdpsreporter_backend_vg'
+            host: 'arcdpsreporter_backend'
             , port: 3306
             , user: 'user'
             , password: 'password'
